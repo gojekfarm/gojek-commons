@@ -9,7 +9,7 @@
 	<description>Gojek commons library</description>
 
 	<scm>
-		<developerConnection>scm:git:git@source.golabs.io:gokilat/gojek-commons.git</developerConnection>
+		<developerConnection>scm:git:git@github.com:gojek-engineering/gojek-commons.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
