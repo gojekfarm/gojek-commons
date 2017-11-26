@@ -1,4 +1,4 @@
-# GoJek Commons
+# GoJek Commons [![Build Status](https://travis-ci.org/gojek-engineering/gojek-commons.svg?branch=master)](https://travis-ci.org/gojek-engineering/gojek-commons)
 GoJek Commons is a collection of useful abstractions aimed at making micro-service development faster and easier to manage.
 ## Introduction
 From our experience, we have seen that most micro-service development has similar system requirements and they all end up with,
