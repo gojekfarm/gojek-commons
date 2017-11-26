@@ -247,9 +247,9 @@
 	
 	<distributionManagement>
 		<repository>
-			<id>central</id>
-			<name>libs-release</name>
-			<url>http://artifactory-gojek.golabs.io/artifactory/libs-release-local</url>
+			<id>bintray-gojek-repo</id>
+			<name>gojek-repo</name>
+			<url>https://api.bintray.com/maven/gojek/repo/gojek-commons/;publish=1</url>
 		</repository>
 	</distributionManagement>
 </project>
