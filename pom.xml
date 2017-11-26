@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.gojek</groupId>
+	<artifactId>gojek-commons</artifactId>
+	<version>2.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Gojek Commons</name>
+	<description>Gojek commons library</description>
+
+	<scm>
+		<developerConnection>scm:git:git@source.golabs.io:gokilat/gojek-commons.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<modules>
+		<module>gojek-commons-core</module>
+		<module>gojek-commons-jpa</module>
+		
+		<module>gojek-commons-util</module>
+		<module>gojek-commons-application</module>
+		<module>gojek-commons-guice</module>
+		
+		<module>gojek-commons-amqp</module>
+		<module>gojek-commons-cache</module>
+		<!--module>gojek-commons-examples</module-->
+		<module>gojek-commons-job</module>
+	</modules>
+	<properties>
+		<testng.version>6.11</testng.version>
+		<slf4j.version>1.7.24</slf4j.version>
+		<jackson.version>2.9.1</jackson.version>
+		<mockito.version>2.7.22</mockito.version>
+		<spring.version>4.3.2.RELEASE</spring.version>
+		<hibernate.version>5.2.12.Final</hibernate.version>
+		<metrics.version>3.2.5</metrics.version>
+		<dropwizard.version>1.2.0</dropwizard.version>
+		<jersey.version>2.25.1</jersey.version>
+		<guava.version>23.3-jre</guava.version>
+		<swagger.version>1.5.16</swagger.version>
+		<joda.version>2.9.9</joda.version>
+		<guice.version>4.1.0</guice.version>
+		<c3p0.version>0.9.5.2</c3p0.version>
+		<beanutils.version>1.9.3</beanutils.version>
+		
+		<skipTests>false</skipTests>
+		<ciBuildInfo>tainted_build</ciBuildInfo>
+		
+		<!-- maven checkstyle plugin configs -->
+		<maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+		<maven.checkstyle.plugin.include.test.directories>true</maven.checkstyle.plugin.include.test.directories>
+		<maven.checkstyle.plugin.violationSeverity>error</maven.checkstyle.plugin.violationSeverity>
+		<maven.checkstyle.plugin.maxAllowedViolations>7000</maven.checkstyle.plugin.maxAllowedViolations>
+		<maven.checkstyle.failOnViolation>false</maven.checkstyle.failOnViolation>
+
+		<!-- maven surefire plugin configs -->
+		<maven.surefire.plugin.version>2.20.1</maven.surefire.plugin.version>
+		
+		<!-- maven findbugs plugin configs -->
+		<maven.findbugs.plugin.version>3.0.5</maven.findbugs.plugin.version>
+		<maven.findbugs.failOnError>false</maven.findbugs.failOnError>
+		
+		<!--maven jacoco plugin version -->
+		<maven.jacoco.plugin.version>0.7.9</maven.jacoco.plugin.version>
+		
+		<!--maven compiler plugin settings -->
+		<maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
+		<java.source.version>1.8</java.source.version>
+		<java.target.version>1.8</java.target.version>
+		<showWarnings>true</showWarnings>
+		<showDeprecation>true</showDeprecation>
+		
+		<!--maven plugin versions -->
+		<maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+		<maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+		<maven.source.plugin.version>3.0.1</maven.source.plugin.version>
+		<maven.release.plugin.version>2.5.3</maven.release.plugin.version>
+		<maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
+		
+		<checkstyle.config />
+		<findbugs.config />
+		<maven.build.classifier />
+		<commons.pool.version>2.4.3</commons.pool.version>
+		<activejpa.version>1.0.1</activejpa.version>
+		<jedis.version>2.9.0</jedis.version>
+		<flyway.version>4.2.0</flyway.version>
+		<httpclient.version>4.5.3</httpclient.version>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.plugin.version}</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.plugin.version}</version>
+				<configuration>
+					<source>${java.source.version}</source>
+					<target>${java.target.version}</target>
+					<compilerArgument>-Xlint:-path</compilerArgument>
+					<showWarnings>${showWarnings}</showWarnings>
+					<showDeprecation>${showDeprecation}</showDeprecation>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${maven.jacoco.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>post-unit-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<!-- Sets the path to the file which contains the execution data. -->
+
+							<dataFile>target/jacoco.exec</dataFile>
+							<!-- Sets the output directory for the code coverage report. -->
+							<outputDirectory>target/jacoco-ut</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<systemPropertyVariables>
+						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>${maven.buildnumber.plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven.jar.plugin.version}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Build>${buildNumber}/${ciBuildInfo}</Implementation-Build>
+						</manifestEntries>
+					</archive>
+					<classifier>${maven.build.classifier}</classifier>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven.javadoc.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<configuration>
+							<additionalparam>${javadoc.opts}</additionalparam>
+						</configuration>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${maven.source.plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${maven.release.plugin.version}</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<tagNameFormat>@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<includeScope>runtime</includeScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>jcenter</id>
+			<url>https://jcenter.bintray.com</url>
+		</repository>
+	</repositories>
+	
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	
+	<distributionManagement>
+		<repository>
+			<id>central</id>
+			<name>libs-release</name>
+			<url>http://artifactory-gojek.golabs.io/artifactory/libs-release-local</url>
+		</repository>
+	</distributionManagement>
+</project>

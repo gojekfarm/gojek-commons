@@ -1,0 +1,82 @@
+logging:
+  level: ${LOG_LEVEL:-INFO}
+  loggers:
+    log4j.logger.org.hibernate: "INFO"
+    org.hibernate.hql: "ERROR"
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      logFormat: "%d [%thread] %-5level %c{15} - %msg%n%rEx"
+
+server:
+  type: simple
+  applicationContextPath: /
+  adminContextPath: /admin
+  connector:
+    port: 8080
+    type: http
+  requestLog:
+    appenders:
+      - type: console
+        timeZone: UTC
+
+jpa:
+  migrate: "true"
+  driverClass: "org.postgresql.Driver"
+  user: ${DB_USER:-gokilat}
+  password: ${DB_PASSWORD:-}
+  url: jdbc:postgresql://${DB_HOST:-localhost}:${DB_PORT:-5432}/${DB_NAME:-ds}?autoReconnect=true
+  properties:
+    hibernate.show_sql: ${DB_LOG_SQL:-true}
+    hibernate.format_sql: "false"
+    # hibernate.hbm2ddl.auto: create-drop
+    hibernate.ejb.interceptor: com.gojek.guice.QueuedProducerTransactionInterceptor
+    hibernate.dialect: com.gojek.jpa.util.ExtendedPostgreSQL94Dialect
+    hibernate.c3p0.acquireIncrement: 2
+    hibernate.c3p0.initialPoolSize: 3
+    hibernate.c3p0.minPoolSize: 5
+    hibernate.c3p0.maxPoolSize: ${DB_POOL_MAX_SIZE:-10}
+    hibernate.c3p0.maxIdleTime: 300
+    hibernate.c3p0.maxStatements: 500
+    hibernate.c3p0.idleConnectionTestPeriod: 30
+    hibernate.c3p0.preferredTestQuery: "SELECT 1"
+    
+cache:
+  host: ${REDIS_HOST:-localhost}
+  port: ${REDIS_PORT:-6379}
+  password: ${REDIS_PASSWORD:-}
+  timeout: ${REDIS_TIMEOUT:-5}
+  maxConnections: ${REDIS_MAX_CONNECTIONS:-25}
+  minConnections: ${REDIS_MIN_CONNECTIONS:-5}
+  maxIdleConnections: ${REDIS_MAX_IDLE_CONNECTIONS:-5}
+
+amqp:
+  automaticRecovery: true
+  uri: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@${RABBITMQ_HOST:-localhost}:${RABBITMQ_PORT:-5672}
+  maxChannels: ${RABBITMQ_MAX_CHANNELS:-11}
+  minChannels: ${RABBITMQ_MIN_CHANNELS:-5}
+  maxIdleChannels: ${RABBITMQ_MAX_IDLE_CHANNELS:-5}
+    
+queue:
+  driverStatusDestination:
+    exchange: ${DRIVER_TOPIC_EXCHANGE:-driver_direct_exchange}
+    routingKey: driver.status
+  driverConsumer:
+    retryDestination: 
+      exchange: ${DRIVER_RETRY_DIRECT_EXCHANGE:-driver_retry_direct_exchange}
+    maxRetries: ${MAX_DRIVER_EVENTS_CONSUMER_RETRIES:-5}
+    queueName: ${DRIVER_EVENTS_QUEUE:-driver_events}
+    maxQueueConsumers: ${MAX_DRIVER_EVENTS_QUEUE_CONSUMERS:-5}
+    
+swagger:
+  resourcePackage: com.gojek.ds.resource
+
+metrics:
+  reporters:
+    - type: console
+      useRegexFilters: true
+      excludes:
+        - ch.*
+        - jvm.*
+      frequency: 600s
