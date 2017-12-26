@@ -3,13 +3,14 @@
  */
 package com.gojek.amqp;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import com.rabbitmq.client.Address;
 import org.testng.annotations.BeforeMethod;
@@ -48,7 +49,15 @@ public class AmqpConnectionManagerTest {
 		manager.start();
 		verify(amqpConnection).init(connection, configuration.getMaxChannels(), configuration.getMinChannels(), configuration.getMaxIdleChannels());
 	}
-	
+
+	@Test
+	public void shouldCreateConnectionFactoryWithConfigs() throws Exception {
+		when(manager.createConnectionFactory()).thenCallRealMethod();
+		ConnectionFactory factory = manager.createConnectionFactory();
+		assertEquals(configuration.isAutoRecovery(), factory.isAutomaticRecoveryEnabled());
+		assertEquals(configuration.getNetworkRecoveryInterval().longValue(), factory.getNetworkRecoveryInterval());
+	}
+
 	@Test
 	public void shouldStopManager() throws Exception {
 		manager.start();
