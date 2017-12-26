@@ -3,6 +3,7 @@
  */
 package com.gojek.amqp;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertNotNull;
 
+import com.rabbitmq.client.Address;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -38,7 +40,7 @@ public class AmqpConnectionManagerTest {
 		ConnectionFactory factory = mock(ConnectionFactory.class);
 		doReturn(factory).when(manager).createConnectionFactory();
 		connection = mock(Connection.class);
-		when(factory.newConnection()).thenReturn(connection);
+		when(factory.newConnection(new Address[]{})).thenReturn(connection);
 	}
 	
 	@Test
