@@ -51,7 +51,7 @@ public class AmqpConnectionManager implements Managed {
 	public void start() {
 		try {
 			ConnectionFactory factory = createConnectionFactory();
-			this.connection.init(factory.newConnection(), configuration.getMaxChannels(), configuration.getMinChannels(), configuration.getMaxIdleChannels());
+			this.connection.init(factory.newConnection(configuration.getAddresses()), configuration.getMaxChannels(), configuration.getMinChannels(), configuration.getMaxIdleChannels());
 		} catch (Exception e) {
 			logger.error("Failed while initializing the amqp connection", e);
 			throw new AmqpException("Failed while initializing the amqp connection", e);
@@ -68,6 +68,7 @@ public class AmqpConnectionManager implements Managed {
 		if (threadFactory != null) {
 		    factory.setThreadFactory(threadFactory);
 		}
+		factory.setNetworkRecoveryInterval(configuration.getNetworkRecoveryInterval());
 		factory.setAutomaticRecoveryEnabled(configuration.isAutoRecovery());
 		return factory;
 	}

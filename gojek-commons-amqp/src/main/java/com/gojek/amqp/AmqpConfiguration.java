@@ -4,6 +4,10 @@
 package com.gojek.amqp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.collect.Lists;
+import com.rabbitmq.client.Address;
+
+import java.util.List;
 
 /**
  * @author ganeshs
@@ -21,7 +25,13 @@ public class AmqpConfiguration {
 	private Integer minChannels = 5;
 	
 	private Integer maxIdleChannels = 5;
-	
+
+	private Integer networkRecoveryInterval = 1000;
+
+	private List<String> hosts = Lists.newArrayList();
+
+	private Address[] addresses;
+
 	/**
 	 * Default Constructor
 	 */
@@ -29,21 +39,26 @@ public class AmqpConfiguration {
     }
 
 	/**
-     * @param uri
-     * @param autoRecovery
-     * @param maxChannels
-     * @param minChannels
-     * @param maxIdleChannels
-     */
-    public AmqpConfiguration(String uri, boolean autoRecovery, Integer maxChannels, Integer minChannels, Integer maxIdleChannels) {
-        this.uri = uri;
-        this.autoRecovery = autoRecovery;
-        this.maxChannels = maxChannels;
-        this.minChannels = minChannels;
-        this.maxIdleChannels = maxIdleChannels;
-    }
+	 * @param uri
+	 * @param autoRecovery
+	 * @param maxChannels
+	 * @param minChannels
+	 * @param maxIdleChannels
+	 * @param networkRecoveryInterval
+	 * @param hosts
+	 */
+	public AmqpConfiguration(String uri, boolean autoRecovery, Integer maxChannels, Integer minChannels, Integer maxIdleChannels,
+							 Integer networkRecoveryInterval, List<String> hosts) {
+		this.uri = uri;
+		this.autoRecovery = autoRecovery;
+		this.maxChannels = maxChannels;
+		this.minChannels = minChannels;
+		this.maxIdleChannels = maxIdleChannels;
+		this.networkRecoveryInterval = networkRecoveryInterval;
+		this.hosts = hosts;
+	}
 
-    /**
+	/**s
 	 * @return the uri
 	 */
 	public String getUri() {
@@ -113,4 +128,29 @@ public class AmqpConfiguration {
 		this.maxIdleChannels = maxIdleChannels;
 	}
 
+	public Integer getNetworkRecoveryInterval() {
+		return networkRecoveryInterval;
+	}
+
+	public void setNetworkRecoveryInterval(Integer networkRecoveryInterval) {
+		this.networkRecoveryInterval = networkRecoveryInterval;
+	}
+
+	public List<String> getHosts() {
+		return hosts;
+	}
+
+	public Address[] getAddresses() {
+		if (addresses == null) {
+			addresses = new Address[hosts.size()];
+			for(int i=0; i<addresses.length; i++) {
+				addresses[i] = new Address(hosts.get(i));
+			}
+		}
+		return addresses;
+	}
+
+	public void setHosts(List<String> hosts) {
+		this.hosts = hosts;
+	}
 }
