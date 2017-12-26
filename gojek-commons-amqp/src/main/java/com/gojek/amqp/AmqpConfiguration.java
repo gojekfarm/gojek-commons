@@ -3,6 +3,7 @@
  */
 package com.gojek.amqp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
 import com.rabbitmq.client.Address;
@@ -30,6 +31,7 @@ public class AmqpConfiguration {
 
 	private List<String> hosts = Lists.newArrayList();
 
+	@JsonIgnore
 	private Address[] addresses;
 
 	/**
