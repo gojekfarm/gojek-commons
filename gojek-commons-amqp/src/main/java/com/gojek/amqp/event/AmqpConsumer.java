@@ -62,7 +62,6 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 		
 		Status status = Status.soft_failure;
 		try {
-//			E proxy = (E) Proxy.newProxyInstance(handler.getEventClass().getClassLoader(), new Class[] { handler.getEventClass(), EventWrapper.class}, new EventWrapperInvocationHandler<>(event, envelope, properties.getHeaders()));
 			E proxy = createProxy(handler.getEventClass(), event, envelope, properties.getHeaders());
 			status = receive(proxy);
 		} catch (Exception e) {
@@ -91,6 +90,7 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 		try {
 			return proxyClass.newInstance();
 		} catch (Exception e) {
+			logger.error("Failed while creating a proxy for the event", e);
 			throw new AmqpException("Failed while creating a proxy for the event", e);
 		}
 	}
