@@ -3,7 +3,6 @@
  */
 package com.gojek.ds;
 
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -25,10 +24,8 @@ import com.gojek.ds.service.EventPublisherService;
 import com.gojek.guice.jpa.GuiceJpaBundle;
 import com.gojek.guice.util.GuiceUtil;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
-import com.google.inject.Module;
 
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -71,7 +68,7 @@ public class DSApplication extends BaseApplication<DSConfiguration> {
         }).build());
         bootstrap.addBundle(CacheBundle.<DSConfiguration>builder().using(() -> GuiceUtil.getInstance(JedisConnection.class)).build());
         bootstrap.addBundle(AmqpBundle.<DSConfiguration>builder().using(() -> GuiceUtil.getInstance(AmqpConnection.class)).with(configuration -> {
-            Map<ConsumerConfiguration, EventHandler> consumers = Maps.newHashMap();
+            Map<ConsumerConfiguration, EventHandler<?>> consumers = Maps.newHashMap();
             consumers.put(configuration.getQueueConfiguration().getDriverConsumerConfiguration(), GuiceUtil.getInstance(DriverEventHandler.class));
             return consumers;
         }).build());

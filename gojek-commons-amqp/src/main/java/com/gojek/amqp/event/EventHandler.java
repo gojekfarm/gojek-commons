@@ -3,13 +3,12 @@ package com.gojek.amqp.event;
 import java.util.Map;
 
 import com.gojek.core.event.Consumer.Status;
-import com.gojek.core.event.Event;
 
 /**
  * @author ganeshs
  *
  */
-public interface EventHandler {
+public interface EventHandler<E> {
 	
 	/**
 	 * Handle the event
@@ -18,5 +17,12 @@ public interface EventHandler {
 	 * @param routingKey
 	 * @return true to ack the event, false to nack the event
 	 */
-	Status handle(Event event, String queueName, String routingKey, Map<String, Object> headers);
+	Status handle(E event, String queueName, String routingKey, Map<String, Object> headers);
+	
+	/**
+	 * Returns the event class
+	 * 
+	 * @return
+	 */
+	Class<E> getEventClass();
 }

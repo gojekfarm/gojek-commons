@@ -12,6 +12,7 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.gojek.core.event.Event;
 import com.gojek.core.event.QueuedProducer;
 
 /**
@@ -22,7 +23,7 @@ public class QueuedProducerTransactionInterceptorTest {
 	
 	private QueuedProducerTransactionInterceptor interceptor;
 	
-	private QueuedProducer producer;
+	private QueuedProducer<Event> producer;
 	
 	@BeforeMethod
 	public void setup() {

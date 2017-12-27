@@ -17,6 +17,7 @@ import org.testng.annotations.Test;
 import com.gojek.amqp.event.AmqpConsumer;
 import com.gojek.amqp.event.EventHandler;
 import com.gojek.core.event.ConsumerConfiguration;
+import com.gojek.core.event.Event;
 import com.rabbitmq.client.Channel;
 
 /**
@@ -25,9 +26,9 @@ import com.rabbitmq.client.Channel;
  */
 public class AmqpConsumerContainerTest {
 
-	private AmqpConsumerContainer container;
+	private AmqpConsumerContainer<Event> container;
 	
-	private EventHandler handler;
+	private EventHandler<Event> handler;
 	
 	private int maxConsumers;
 	
@@ -44,19 +45,19 @@ public class AmqpConsumerContainerTest {
 		consumerConfig = new ConsumerConfiguration("test_queue", null);
 		consumerConfig.setMaxQueueConsumers(maxConsumers);
 		connection = mock(AmqpConnection.class);
-		container = spy(new AmqpConsumerContainer(consumerConfig, handler, connection));
+		container = spy(new AmqpConsumerContainer<Event>(consumerConfig, handler, connection));
 		when(connection.getChannel()).thenReturn(channel);
 	}
 	
 	@Test
 	public void shouldCreateConsumer() {
-		AmqpConsumer consumer = container.createConsumer(channel);	
+		AmqpConsumer<Event> consumer = container.createConsumer(channel);	
 		assertEquals(consumer.getChannel(), channel);
 	}
 	
 	@Test
 	public void shouldStartConsumers() {
-		AmqpConsumer consumer = mock(AmqpConsumer.class);
+		AmqpConsumer<Event> consumer = mock(AmqpConsumer.class);
 		doReturn(consumer).when(container).createConsumer(channel);
 		container.start();
 		verify(consumer, times(5)).start();
@@ -64,13 +65,13 @@ public class AmqpConsumerContainerTest {
 	
 	@Test(expectedExceptions=IllegalStateException.class)
 	public void shouldNotStartIfConnectionIsNotSet() {
-	    container = new AmqpConsumerContainer(consumerConfig, handler, null);
+	    container = new AmqpConsumerContainer<Event>(consumerConfig, handler, null);
 		container.start();
 	}
 	
 	@Test
 	public void shouldStopConsumers() {
-		AmqpConsumer consumer = mock(AmqpConsumer.class);
+		AmqpConsumer<Event> consumer = mock(AmqpConsumer.class);
 		doReturn(consumer).when(container).createConsumer(channel);
 		container.start();
 		container.stop();
@@ -79,8 +80,8 @@ public class AmqpConsumerContainerTest {
 	
 	@Test
 	public void shouldHandleConsumerShutdown() {
-		AmqpConsumer consumer = mock(AmqpConsumer.class);
-		AmqpConsumer newConsumer = mock(AmqpConsumer.class);
+		AmqpConsumer<Event> consumer = mock(AmqpConsumer.class);
+		AmqpConsumer<Event> newConsumer = mock(AmqpConsumer.class);
 		doReturn(newConsumer).when(container).createConsumer(channel);
 		container.handleShutdown(consumer);
 		verify(newConsumer).start();

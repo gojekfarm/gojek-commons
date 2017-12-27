@@ -23,7 +23,7 @@ import com.gojek.guice.jpa.ActiveJpaGuiceExecutionWrapper;
  * @author ganeshs
  *
  */
-public class DriverEventHandler extends FixedRetryHandler {
+public class DriverEventHandler extends FixedRetryHandler<Event> {
     
     private ActiveJpaGuiceExecutionWrapper executionWrapper;
     
@@ -36,7 +36,7 @@ public class DriverEventHandler extends FixedRetryHandler {
      */
     @Inject
     public DriverEventHandler(DSConfiguration configuration, AmqpConnection connection) {
-        super(connection, configuration.getQueueConfiguration().getDriverConsumerConfiguration().getRetryDestination(), configuration.getQueueConfiguration().getDriverConsumerConfiguration().getMaxRetries());
+        super(connection, configuration.getQueueConfiguration().getDriverConsumerConfiguration().getRetryDestination(), Event.class, configuration.getQueueConfiguration().getDriverConsumerConfiguration().getMaxRetries());
         this.executionWrapper = new ActiveJpaGuiceExecutionWrapper();
     }
     

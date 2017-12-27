@@ -9,7 +9,6 @@ import javax.inject.Singleton;
 import com.gojek.amqp.AmqpConnection;
 import com.gojek.amqp.AmqpException;
 import com.gojek.core.event.Destination;
-import com.gojek.core.event.Event;
 import com.gojek.core.event.Producer;
 import com.gojek.util.serializer.Serializer;
 
@@ -18,7 +17,7 @@ import com.gojek.util.serializer.Serializer;
  *
  */
 @Singleton
-public class AmqpProducer implements Producer {
+public class AmqpProducer<E> implements Producer<E> {
     
     private AmqpConnection connection;
     
@@ -31,7 +30,7 @@ public class AmqpProducer implements Producer {
     }
 
     @Override
-    public void send(Event event, Destination destination) {
+    public void send(E event, Destination destination) {
         connection.execute((channel) -> {
             try {
                 String value = Serializer.DEFAULT_JSON_SERIALIZER.serialize(event);

@@ -3,12 +3,12 @@
  */
 package com.gojek.amqp;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
 import com.rabbitmq.client.Address;
-
-import java.util.List;
 
 /**
  * @author ganeshs

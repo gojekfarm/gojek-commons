@@ -37,7 +37,7 @@ import com.rabbitmq.client.Connection;
  */
 public class FixedRetryHandlerTest {
 	
-	private FixedRetryHandler handler;
+	private FixedRetryHandler<Event> handler;
 	
 	private Channel channel;
 	
@@ -62,7 +62,7 @@ public class FixedRetryHandlerTest {
 		when(conn.createChannel()).thenReturn(channel);
 		connection = new AmqpConnection();
 		connection.init(conn, 2, 2, 2);
-		handler = spy(new FixedRetryHandler(connection, retryDestination, maxRetries));
+		handler = spy(new FixedRetryHandler<Event>(connection, retryDestination, Event.class, maxRetries));
 		this.event = new Event("some_id", "some_type", DateTime.now());
 	}
 

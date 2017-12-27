@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import com.gojek.amqp.AmqpException;
 import com.gojek.core.event.Consumer;
-import com.gojek.core.event.Event;
 import com.gojek.util.serializer.Serializer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -19,13 +18,17 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
+
 /**
  * @author ganeshs
  *
  */
-public class AmqpConsumer extends DefaultConsumer implements Consumer {
+public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	
-	private EventHandler handler;
+	private EventHandler<E> handler;
 	
 	private String queueName;
 	
@@ -39,7 +42,7 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 	 * @param handler
 	 * @param shutdownListener
 	 */
-	public AmqpConsumer(String queueName, Channel channel, EventHandler handler, ShutdownListener shutdownListener) {
+	public AmqpConsumer(String queueName, Channel channel, EventHandler<E> handler, ShutdownListener shutdownListener) {
 		super(channel);
 		this.queueName = queueName;
 		this.handler = handler;
@@ -48,9 +51,9 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 
 	@Override
 	public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException {
-		Event event = null;
+		E event = null;
 		try {
-			event = Serializer.DEFAULT_JSON_SERIALIZER.deserialize(new String(body), Event.class);
+			event = Serializer.DEFAULT_JSON_SERIALIZER.deserialize(new String(body), handler.getEventClass());
 		} catch (Exception e) {
 			logger.error("Failed while deserializing the event", e);
 			getChannel().basicNack(envelope.getDeliveryTag(), false, false);
@@ -59,7 +62,9 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 		
 		Status status = Status.soft_failure;
 		try {
-			status = receive(EventWrapper.wrap(event, envelope, properties.getHeaders()));
+//			E proxy = (E) Proxy.newProxyInstance(handler.getEventClass().getClassLoader(), new Class[] { handler.getEventClass(), EventWrapper.class}, new EventWrapperInvocationHandler<>(event, envelope, properties.getHeaders()));
+			E proxy = createProxy(handler.getEventClass(), event, envelope, properties.getHeaders());
+			status = receive(proxy);
 		} catch (Exception e) {
 			logger.error("Failed while handling the event", e);
 		} finally {
@@ -75,6 +80,18 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 				getChannel().basicNack(envelope.getDeliveryTag(), false, false);
 				break;
 			}
+		}
+	}
+	
+	protected E createProxy(Class<E> eventClass, E event, Envelope envelope, Map<String, Object> headers) {
+		Class<E> proxyClass = (Class<E>) new ByteBuddy().subclass(eventClass).implement(EventWrapper.class)
+				.method(ElementMatchers.named("getEvent").or(ElementMatchers.named("getEnvelope")).or(ElementMatchers.named("getHeaders")))
+				.intercept(MethodDelegation.to(new EventInterceptor<E>(event, envelope, headers))).make()
+				.load(eventClass.getClassLoader()).getLoaded();
+		try {
+			return proxyClass.newInstance();
+		} catch (Exception e) {
+			throw new AmqpException("Failed while creating a proxy for the event", e);
 		}
 	}
 	
@@ -114,9 +131,9 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 	}
 	
 	@Override
-	public Status receive(Event event) {
-		EventWrapper wrapper = (EventWrapper) event;
-		return this.handler.handle(wrapper.event, queueName, wrapper.envelope.getRoutingKey(), wrapper.headers);
+	public Status receive(E event) {
+		EventWrapper<E> wrapper = (EventWrapper<E>) event;
+		return this.handler.handle(wrapper.getEvent(), queueName, wrapper.getEnvelope().getRoutingKey(), wrapper.getHeaders());
 	}
 	
 	/**
@@ -133,13 +150,22 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 		void handleShutdown(DefaultConsumer consumer);
 	}
 	
+	public static interface EventWrapper<E> {
+		
+		E getEvent();
+		
+		Envelope getEnvelope();
+		
+		Map<String, Object> getHeaders();
+	}
+	
 	/**
 	 * @author ganeshs
 	 *
 	 */
-	private static class EventWrapper extends Event {
+	public static class EventInterceptor<E> {
 		
-		private Event event;
+		private E event;
 		
 		private Envelope envelope;
 		
@@ -148,20 +174,31 @@ public class AmqpConsumer extends DefaultConsumer implements Consumer {
 		/**
 		 * @param event
 		 */
-		private EventWrapper(Event event, Envelope envelope, Map<String, Object> headers) {
+		private EventInterceptor(E event, Envelope envelope, Map<String, Object> headers) {
 			this.event = event;
 			this.envelope = envelope;
 			this.headers = headers;
 		}
-		
+
 		/**
-		 * @param event
-		 * @param envelope
-		 * @param headers
-		 * @return
+		 * @return the event
 		 */
-		public static EventWrapper wrap(Event event, Envelope envelope, Map<String, Object> headers) {
-			return new EventWrapper(event, envelope, headers); 
+		public E getEvent() {
+			return event;
+		}
+
+		/**
+		 * @return the envelope
+		 */
+		public Envelope getEnvelope() {
+			return envelope;
+		}
+
+		/**
+		 * @return the headers
+		 */
+		public Map<String, Object> getHeaders() {
+			return headers;
 		}
 	}
 }

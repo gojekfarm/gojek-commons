@@ -22,15 +22,15 @@ import io.dropwizard.lifecycle.Managed;
  * @author ganeshs
  *
  */
-public class AmqpConsumerContainer implements ShutdownListener, Managed {
+public class AmqpConsumerContainer<E> implements ShutdownListener, Managed {
 	
 	private String queueName;
 	
 	private int maxConsumers;
 	
-	private List<AmqpConsumer> consumers;
+	private List<AmqpConsumer<E>> consumers;
 	
-	private EventHandler handler;
+	private EventHandler<E> handler;
 	
 	private AmqpConnection connection;
 	
@@ -39,9 +39,10 @@ public class AmqpConsumerContainer implements ShutdownListener, Managed {
 	/**
 	 * @param configuration
 	 * @param handler
+	 * @param eventClass
 	 * @param connection
 	 */
-	public AmqpConsumerContainer(ConsumerConfiguration configuration, EventHandler handler, AmqpConnection connection) {
+	public AmqpConsumerContainer(ConsumerConfiguration configuration, EventHandler<E> handler, AmqpConnection connection) {
 		this.queueName = configuration.getQueueName();
 		this.maxConsumers = configuration.getMaxQueueConsumers();
 		this.handler = handler;
@@ -68,7 +69,7 @@ public class AmqpConsumerContainer implements ShutdownListener, Managed {
 	 * @param channel
 	 */
 	protected void addConsumer(Channel channel) {
-		AmqpConsumer consumer = createConsumer(channel);
+		AmqpConsumer<E> consumer = createConsumer(channel);
 		consumer.start();
 		this.consumers.add(consumer);
 	}
@@ -77,8 +78,8 @@ public class AmqpConsumerContainer implements ShutdownListener, Managed {
 	 * @param channel
 	 * @return
 	 */
-	protected AmqpConsumer createConsumer(Channel channel) {
-		return new AmqpConsumer(queueName, channel, handler, this);
+	protected AmqpConsumer<E> createConsumer(Channel channel) {
+		return new AmqpConsumer<E>(queueName, channel, handler, this);
 	}
 	
 	/**
@@ -86,7 +87,7 @@ public class AmqpConsumerContainer implements ShutdownListener, Managed {
 	 */
 	public void stop() {
 		logger.info("Stopping the container");
-		for (AmqpConsumer consumer : this.consumers) {
+		for (AmqpConsumer<E> consumer : this.consumers) {
 			consumer.stop();
 		}
 	}
@@ -118,7 +119,7 @@ public class AmqpConsumerContainer implements ShutdownListener, Managed {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        AmqpConsumerContainer other = (AmqpConsumerContainer) obj;
+        AmqpConsumerContainer<E> other = (AmqpConsumerContainer<E>) obj;
         if (connection == null) {
             if (other.connection != null)
                 return false;

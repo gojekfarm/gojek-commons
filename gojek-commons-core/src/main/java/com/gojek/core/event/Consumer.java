@@ -7,7 +7,7 @@ package com.gojek.core.event;
  * @author ganeshs
  *
  */
-public interface Consumer {
+public interface Consumer<E> {
 	
 	/**
 	 * @author ganeshs
@@ -46,6 +46,6 @@ public interface Consumer {
 	 * @param event
 	 * @return
 	 */
-	Status receive(Event event);
+	Status receive(E event);
 	
 }
