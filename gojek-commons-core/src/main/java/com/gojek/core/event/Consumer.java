@@ -54,12 +54,4 @@ public interface Consumer<E> {
 	 */
 	void stop();
 	
-	/**
-	 * Receive and handle the event
-	 *
-	 * @param event
-	 * @return
-	 */
-	Status receive(E event);
-	
 }

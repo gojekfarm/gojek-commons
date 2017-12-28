@@ -19,10 +19,6 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.matcher.ElementMatchers;
-
 /**
  * @author ganeshs
  *
@@ -63,8 +59,7 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 		
 		Status status = Status.soft_failure;
 		try {
-			E proxy = createProxy(handler.getEventClass(), event, envelope, properties.getHeaders());
-			status = receive(proxy);
+			status = receive(event, envelope.getRoutingKey(), properties.getHeaders());
 		} catch (Exception e) {
 			logger.error("Failed while handling the event", e);
 		} finally {
@@ -80,27 +75,6 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 				getChannel().basicNack(envelope.getDeliveryTag(), false, false);
 				break;
 			}
-		}
-	}
-	
-	/**
-	 * @param eventClass
-	 * @param event
-	 * @param envelope
-	 * @param headers
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	protected E createProxy(Class<E> eventClass, E event, Envelope envelope, Map<String, Object> headers) {
-		Class<E> proxyClass = (Class<E>) new ByteBuddy().subclass(eventClass).implement(EventWrapper.class)
-				.method(ElementMatchers.named("getEvent").or(ElementMatchers.named("getEnvelope")).or(ElementMatchers.named("getHeaders")))
-				.intercept(MethodDelegation.to(new EventInterceptor<E>(event, envelope, headers))).make()
-				.load(eventClass.getClassLoader()).getLoaded();
-		try {
-			return proxyClass.newInstance();
-		} catch (Exception e) {
-			logger.error("Failed while creating a proxy for the event", e);
-			throw new AmqpException("Failed while creating a proxy for the event", e);
 		}
 	}
 	
@@ -139,67 +113,13 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 		}
 	}
 	
-	@Override
-	@SuppressWarnings("unchecked")
-	public Status receive(E event) {
-		EventWrapper<E> wrapper = (EventWrapper<E>) event;
-		return this.handler.handle(wrapper.getEvent(), queueName, wrapper.getEnvelope().getRoutingKey(), wrapper.getHeaders());
-	}
-	
 	/**
-	 * @author ganesh.s
-	 *
-	 * @param <E>
+	 * @param event
+	 * @param routingKey
+	 * @param headers
+	 * @return
 	 */
-	public static interface EventWrapper<E> {
-		
-		E getEvent();
-		
-		Envelope getEnvelope();
-		
-		Map<String, Object> getHeaders();
-	}
-	
-	/**
-	 * @author ganeshs
-	 *
-	 */
-	public static class EventInterceptor<E> {
-		
-		private E event;
-		
-		private Envelope envelope;
-		
-		private Map<String, Object> headers;
-		
-		/**
-		 * @param event
-		 */
-		private EventInterceptor(E event, Envelope envelope, Map<String, Object> headers) {
-			this.event = event;
-			this.envelope = envelope;
-			this.headers = headers;
-		}
-
-		/**
-		 * @return the event
-		 */
-		public E getEvent() {
-			return event;
-		}
-
-		/**
-		 * @return the envelope
-		 */
-		public Envelope getEnvelope() {
-			return envelope;
-		}
-
-		/**
-		 * @return the headers
-		 */
-		public Map<String, Object> getHeaders() {
-			return headers;
-		}
+	protected Status receive(E event, String routingKey, Map<String, Object> headers) {
+		return this.handler.handle(event, queueName, routingKey, headers);
 	}
 }

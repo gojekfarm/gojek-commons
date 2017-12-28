@@ -46,11 +46,6 @@
 			<version>${dropwizard.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>1.7.5</version>
-		</dependency>
 	</dependencies>
 	<properties>
 		<rabbitmq.version>4.1.0</rabbitmq.version>
