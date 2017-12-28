@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gojek.amqp.AmqpException;
 import com.gojek.core.event.Consumer;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.serializer.Serializer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -32,7 +33,7 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	
 	private String queueName;
 	
-	private ShutdownListener shutdownListener;
+	private Consumer.ShutdownListener shutdownListener;
 	
 	private static final Logger logger = LoggerFactory.getLogger(AmqpConsumer.class);
 	
@@ -42,7 +43,7 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	 * @param handler
 	 * @param shutdownListener
 	 */
-	public AmqpConsumer(String queueName, Channel channel, EventHandler<E> handler, ShutdownListener shutdownListener) {
+	public AmqpConsumer(String queueName, Channel channel, EventHandler<E> handler, Consumer.ShutdownListener shutdownListener) {
 		super(channel);
 		this.queueName = queueName;
 		this.handler = handler;
@@ -82,6 +83,14 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 		}
 	}
 	
+	/**
+	 * @param eventClass
+	 * @param event
+	 * @param envelope
+	 * @param headers
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
 	protected E createProxy(Class<E> eventClass, E event, Envelope envelope, Map<String, Object> headers) {
 		Class<E> proxyClass = (Class<E>) new ByteBuddy().subclass(eventClass).implement(EventWrapper.class)
 				.method(ElementMatchers.named("getEvent").or(ElementMatchers.named("getEnvelope")).or(ElementMatchers.named("getHeaders")))
@@ -131,25 +140,17 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public Status receive(E event) {
 		EventWrapper<E> wrapper = (EventWrapper<E>) event;
 		return this.handler.handle(wrapper.getEvent(), queueName, wrapper.getEnvelope().getRoutingKey(), wrapper.getHeaders());
 	}
 	
 	/**
-	 * Listener for consumer shutdown by broker
+	 * @author ganesh.s
 	 *
-	 * @author ganeshs
-	 *
+	 * @param <E>
 	 */
-	public static interface ShutdownListener {
-		
-		/**
-		 * @param consumer
-		 */
-		void handleShutdown(DefaultConsumer consumer);
-	}
-	
 	public static interface EventWrapper<E> {
 		
 		E getEvent();

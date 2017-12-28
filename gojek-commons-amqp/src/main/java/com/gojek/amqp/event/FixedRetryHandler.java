@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.gojek.amqp.AmqpConnection;
 import com.gojek.core.event.Consumer.Status;
 import com.gojek.core.event.Destination;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.serializer.Serializer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 

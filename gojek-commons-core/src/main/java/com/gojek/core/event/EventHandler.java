@@ -1,4 +1,4 @@
-package com.gojek.amqp.event;
+package com.gojek.core.event;
 
 import java.util.Map;
 

@@ -18,10 +18,10 @@ import org.testng.annotations.Test;
 import com.beust.jcommander.internal.Maps;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.gojek.amqp.event.EventHandler;
 import com.gojek.core.event.ConsumerConfiguration;
 import com.gojek.core.event.Destination;
 import com.gojek.core.event.Event;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.metrics.GenericObjectPoolGaugeSet;
 
 import io.dropwizard.Configuration;

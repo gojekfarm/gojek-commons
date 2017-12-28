@@ -31,6 +31,20 @@ public interface Consumer<E> {
 	}
 	
 	/**
+	 * Listener for consumer shutdown by broker
+	 *
+	 * @author ganeshs
+	 *
+	 */
+	interface ShutdownListener {
+		
+		/**
+		 * @param consumer
+		 */
+		void handleShutdown(Consumer<?> consumer);
+	}
+
+	/**
 	 * Starts the consumer. Consumer will start receiving events only after this is invoked 
 	 */
 	void start();

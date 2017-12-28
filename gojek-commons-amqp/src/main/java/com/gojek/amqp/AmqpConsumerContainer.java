@@ -9,12 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gojek.amqp.event.AmqpConsumer;
-import com.gojek.amqp.event.AmqpConsumer.ShutdownListener;
-import com.gojek.amqp.event.EventHandler;
+import com.gojek.core.event.Consumer;
 import com.gojek.core.event.ConsumerConfiguration;
+import com.gojek.core.event.EventHandler;
 import com.google.common.collect.Lists;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
 
 import io.dropwizard.lifecycle.Managed;
 
@@ -22,7 +21,7 @@ import io.dropwizard.lifecycle.Managed;
  * @author ganeshs
  *
  */
-public class AmqpConsumerContainer<E> implements ShutdownListener, Managed {
+public class AmqpConsumerContainer<E> implements Consumer.ShutdownListener, Managed {
 	
 	private String queueName;
 	
@@ -39,7 +38,6 @@ public class AmqpConsumerContainer<E> implements ShutdownListener, Managed {
 	/**
 	 * @param configuration
 	 * @param handler
-	 * @param eventClass
 	 * @param connection
 	 */
 	public AmqpConsumerContainer(ConsumerConfiguration configuration, EventHandler<E> handler, AmqpConnection connection) {
@@ -93,7 +91,7 @@ public class AmqpConsumerContainer<E> implements ShutdownListener, Managed {
 	}
 
 	@Override
-	public synchronized void handleShutdown(DefaultConsumer consumer) {
+	public synchronized void handleShutdown(Consumer<?> consumer) {
 		logger.info("Removing the shutdown consumer and adding a new one as a replacement");
 		this.consumers.remove(consumer);
 		if (connection != null) {
@@ -112,6 +110,7 @@ public class AmqpConsumerContainer<E> implements ShutdownListener, Managed {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(Object obj) {
         if (this == obj)
             return true;

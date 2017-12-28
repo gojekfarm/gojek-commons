@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import com.gojek.amqp.AmqpConnection.ConnectionPoolListener;
-import com.gojek.amqp.event.EventHandler;
 import com.gojek.core.event.ConsumerConfiguration;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.metrics.GenericObjectPoolGaugeSet;
 import com.google.common.collect.Maps;
 import com.rabbitmq.client.Channel;
@@ -59,7 +59,8 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
         this.consumers = consumers;
     }
     
-    @Override
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
     public void run(T configuration, Environment environment) throws Exception {
         AmqpConnection connection = supplier.get();
         connection.register(new ConnectionPoolListener() {

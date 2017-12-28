@@ -19,6 +19,7 @@ import org.testng.annotations.Test;
 
 import com.gojek.core.event.Consumer.Status;
 import com.gojek.core.event.Event;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.serializer.Serializer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;

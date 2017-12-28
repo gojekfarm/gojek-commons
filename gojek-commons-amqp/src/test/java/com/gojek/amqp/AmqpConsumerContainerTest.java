@@ -15,9 +15,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.gojek.amqp.event.AmqpConsumer;
-import com.gojek.amqp.event.EventHandler;
 import com.gojek.core.event.ConsumerConfiguration;
 import com.gojek.core.event.Event;
+import com.gojek.core.event.EventHandler;
 import com.rabbitmq.client.Channel;
 
 /**
