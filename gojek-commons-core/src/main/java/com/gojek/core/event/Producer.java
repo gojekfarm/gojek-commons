@@ -7,7 +7,7 @@ package com.gojek.core.event;
  * @author ganeshs
  *
  */
-public interface Producer {
+public interface Producer<E> {
 
 	/**
 	 * Send the event to the destination
@@ -15,5 +15,5 @@ public interface Producer {
 	 * @param event
 	 * @param destination
 	 */
-	void send(Event event, Destination destination);
+	void send(E event, Destination destination);
 }

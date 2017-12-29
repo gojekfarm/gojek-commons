@@ -12,7 +12,6 @@ import javax.inject.Singleton;
 import com.gojek.amqp.AmqpConnection;
 import com.gojek.amqp.AmqpException;
 import com.gojek.core.event.Destination;
-import com.gojek.core.event.Event;
 import com.gojek.core.event.QueuedProducer;
 import com.gojek.util.serializer.Serializer;
 
@@ -22,7 +21,7 @@ import com.gojek.util.serializer.Serializer;
  * @author ganeshs
  */
 @Singleton
-public class AmqpQueuedProducer extends QueuedProducer {
+public class AmqpQueuedProducer<E> extends QueuedProducer<E> {
 	
 	private AmqpConnection connection;
 	
@@ -38,9 +37,9 @@ public class AmqpQueuedProducer extends QueuedProducer {
 	public void flushInternal() {
 		connection.execute((channel) -> {
 			try {
-				for (Entry<Destination, List<Event>> entry : getQueues().entrySet()) {
+				for (Entry<Destination, List<E>> entry : getQueues().entrySet()) {
 					Destination destination = entry.getKey();
-					for (Event event : entry.getValue()) {
+					for (E event : entry.getValue()) {
 						String value = Serializer.DEFAULT_JSON_SERIALIZER.serialize(event);
 						channel.basicPublish(destination.getExchange(), destination.getRoutingKey(), null, value.getBytes());
 					}

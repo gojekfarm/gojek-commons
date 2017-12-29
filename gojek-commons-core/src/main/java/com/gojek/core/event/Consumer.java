@@ -7,7 +7,7 @@ package com.gojek.core.event;
  * @author ganeshs
  *
  */
-public interface Consumer {
+public interface Consumer<E> {
 	
 	/**
 	 * @author ganeshs
@@ -31,6 +31,20 @@ public interface Consumer {
 	}
 	
 	/**
+	 * Listener for consumer shutdown by broker
+	 *
+	 * @author ganeshs
+	 *
+	 */
+	interface ShutdownListener {
+		
+		/**
+		 * @param consumer
+		 */
+		void handleShutdown(Consumer<?> consumer);
+	}
+
+	/**
 	 * Starts the consumer. Consumer will start receiving events only after this is invoked 
 	 */
 	void start();
@@ -39,13 +53,5 @@ public interface Consumer {
 	 * Stop the consumer. No more events after this is invoked
 	 */
 	void stop();
-	
-	/**
-	 * Receive and handle the event
-	 *
-	 * @param event
-	 * @return
-	 */
-	Status receive(Event event);
 	
 }

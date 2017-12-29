@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.gojek.amqp.AmqpConnection;
 import com.gojek.core.event.Consumer.Status;
 import com.gojek.core.event.Destination;
-import com.gojek.core.event.Event;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.serializer.Serializer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
@@ -22,13 +22,15 @@ import com.rabbitmq.client.AMQP.BasicProperties;
  *
  * @author ganeshs
  */
-public class FixedRetryHandler implements EventHandler {
+public class FixedRetryHandler<E> implements EventHandler<E> {
 	
 	private AmqpConnection connection;
 	
 	private int maxRetries;
 	
 	private Destination retryDestination;
+	
+	private Class<E> eventClass;
 	
 	public static final String HEADER_X_DEATH = "x-death";
 	
@@ -41,21 +43,28 @@ public class FixedRetryHandler implements EventHandler {
 	/**
 	 * @param connection
 	 * @param retryDestination
+	 * @param eventClass
 	 * @param maxRetries
 	 */
-	public FixedRetryHandler(AmqpConnection connection, Destination retryDestination, int maxRetries) {
+	public FixedRetryHandler(AmqpConnection connection, Destination retryDestination, Class<E> eventClass, int maxRetries) {
 		this.connection = connection;
 		this.retryDestination = retryDestination;
+		this.eventClass = eventClass;
 		this.maxRetries = maxRetries;
 	}
 
 	@Override
-	public final Status handle(Event event, String queueName, String routingKey, Map<String, Object> headers) {
+	public final Status handle(E event, String queueName, String routingKey, Map<String, Object> headers) {
 		Status status = handleInternal(event);
 		if (status == Status.soft_failure) {
 			return retry(event, queueName, routingKey, headers);
 		}
 		return status;
+	}
+	
+	@Override
+	public Class<E> getEventClass() {
+		return eventClass;
 	}
 	
 	/**
@@ -64,7 +73,7 @@ public class FixedRetryHandler implements EventHandler {
 	 * @param event
 	 * @param headers
 	 */
-	protected Status retry(Event event, String queueName, String routingKey, Map<String, Object> headers) {
+	protected Status retry(E event, String queueName, String routingKey, Map<String, Object> headers) {
 		int failureCount = getFailureCount(queueName, headers);
 		if (failureCount >= maxRetries) {
 			try {
@@ -98,8 +107,8 @@ public class FixedRetryHandler implements EventHandler {
 	 *
 	 * @param event
 	 */
-	protected void handleMaxRetryExceeded(Event event) {
-		logger.info("Maximum retries exceeded for event {} id {}", event.getType(), event.getEntityId());
+	protected void handleMaxRetryExceeded(E event) {
+		logger.info("Maximum retries exceeded for event {}", event);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -117,7 +126,7 @@ public class FixedRetryHandler implements EventHandler {
 	 * @param event
 	 * @return
 	 */
-	protected Status handleInternal(Event event) {
+	protected Status handleInternal(E event) {
 		return Status.success;
 	}
 }

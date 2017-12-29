@@ -19,6 +19,7 @@ import org.testng.annotations.Test;
 
 import com.gojek.core.event.Consumer.Status;
 import com.gojek.core.event.Event;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.serializer.Serializer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -31,11 +32,11 @@ import com.rabbitmq.client.ShutdownSignalException;
  */
 public class AmqpConsumerTest {
 	
-	private AmqpConsumer consumer;
+	private AmqpConsumer<Event> consumer;
 	
 	private Channel channel;
 	
-	private EventHandler handler;
+	private EventHandler<Event> handler;
 	
 	private Envelope envelope;
 	
@@ -49,7 +50,8 @@ public class AmqpConsumerTest {
 	public void setup() {
 		channel = mock(Channel.class);
 		handler = mock(EventHandler.class);
-		consumer = new AmqpConsumer(queueName, channel, handler, null);
+		when(handler.getEventClass()).thenReturn(Event.class);
+		consumer = new AmqpConsumer<Event>(queueName, channel, handler, null);
 		envelope = new Envelope(1234L, true, "some_exchange", "some_routing_key");
 		event = new Event("12345", "some_type", DateTime.now());
 		properties = new BasicProperties.Builder().build();
@@ -111,7 +113,7 @@ public class AmqpConsumerTest {
 	@Test
 	public void shouldCallShutdownHandlerWhenItsNotApplicationInitiated() {
 		final AtomicBoolean handlerInvoked = new AtomicBoolean();
-		consumer = new AmqpConsumer("test_queue", channel, handler, c -> {
+		consumer = new AmqpConsumer<Event>("test_queue", channel, handler, c -> {
 			handlerInvoked.set(c == consumer);
 		});
 		ShutdownSignalException exception = new ShutdownSignalException(false, false, null, this);
@@ -122,7 +124,7 @@ public class AmqpConsumerTest {
 	@Test
 	public void shouldNotCallShutdownHandlerWhenItsApplicationInitiated() {
 		final AtomicBoolean handlerInvoked = new AtomicBoolean();
-		consumer = new AmqpConsumer("test_queue", channel, handler, c -> {
+		consumer = new AmqpConsumer<Event>("test_queue", channel, handler, c -> {
 			handlerInvoked.set(true);
 		});
 		ShutdownSignalException exception = new ShutdownSignalException(false, true, null, this);

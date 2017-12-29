@@ -33,7 +33,7 @@ import com.rabbitmq.client.Connection;
  */
 public class AmqpQueuedProducerTest {
 
-	private AmqpQueuedProducer producer;
+	private AmqpQueuedProducer<Event> producer;
 	
 	private Connection connection;
 	
@@ -52,7 +52,7 @@ public class AmqpQueuedProducerTest {
 		amqpConnection.init(connection, 1, 1, 1);
 		channel = mock(Channel.class);
 		when(connection.createChannel()).thenReturn(channel);
-		producer = new AmqpQueuedProducer(amqpConnection);
+		producer = new AmqpQueuedProducer<Event>(amqpConnection);
 	}
 	
 	@Test

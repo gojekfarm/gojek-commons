@@ -20,7 +20,7 @@ public class QueuedProducerTransactionInterceptor extends EmptyInterceptor {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private QueuedProducer producer;
+	private QueuedProducer<?> producer;
 	
 	/**
 	 * Default constructor
@@ -32,7 +32,7 @@ public class QueuedProducerTransactionInterceptor extends EmptyInterceptor {
 	/**
 	 * @param producer
 	 */
-	public QueuedProducerTransactionInterceptor(QueuedProducer producer) {
+	public QueuedProducerTransactionInterceptor(QueuedProducer<?> producer) {
 		this.producer = producer;
 	}
 	

@@ -17,16 +17,16 @@ import com.google.common.collect.Maps;
  *
  * @author ganeshs
  */
-public abstract class QueuedProducer implements Producer {
+public abstract class QueuedProducer<E> implements Producer<E> {
 	
-	private ThreadLocal<Map<Destination, List<Event>>> threadLocal = new ThreadLocal<>();
+	private ThreadLocal<Map<Destination, List<E>>> threadLocal = new ThreadLocal<>();
 
 	/**
 	 * @param event
 	 * @param destination
 	 */
-	public void send(Event event, Destination destination) {
-		List<Event> queue = getQueue(destination);
+	public void send(E event, Destination destination) {
+		List<E> queue = getQueue(destination);
 		queue.add(event);
 	}
 	
@@ -53,8 +53,8 @@ public abstract class QueuedProducer implements Producer {
 	/**
 	 * @return
 	 */
-	protected Map<Destination, List<Event>> getQueues() {
-		Map<Destination, List<Event>> queues = threadLocal.get();
+	protected Map<Destination, List<E>> getQueues() {
+		Map<Destination, List<E>> queues = threadLocal.get();
 		if (queues == null) {
 			queues = Maps.newHashMap();
 			threadLocal.set(queues);
@@ -66,9 +66,9 @@ public abstract class QueuedProducer implements Producer {
 	 * @param destination
 	 * @return
 	 */
-	public List<Event> getQueue(Destination destination) {
-		Map<Destination, List<Event>> queues = getQueues();
-		List<Event> queue = queues.get(destination);
+	public List<E> getQueue(Destination destination) {
+		Map<Destination, List<E>> queues = getQueues();
+		List<E> queue = queues.get(destination);
 		if (queue == null) {
 			queue = Lists.newArrayList();
 			queues.put(destination, queue);

@@ -18,9 +18,10 @@ import org.testng.annotations.Test;
 import com.beust.jcommander.internal.Maps;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.gojek.amqp.event.EventHandler;
 import com.gojek.core.event.ConsumerConfiguration;
 import com.gojek.core.event.Destination;
+import com.gojek.core.event.Event;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.metrics.GenericObjectPoolGaugeSet;
 
 import io.dropwizard.Configuration;
@@ -72,13 +73,13 @@ public class AmqpBundleTest {
     
     @Test
     public void shouldRegisterAmqpConsumerContainerManager() throws Exception {
-        Map<ConsumerConfiguration, EventHandler> consumerHandlers = Maps.newHashMap();
+        Map<ConsumerConfiguration, EventHandler<?>> consumerHandlers = Maps.newHashMap();
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration("some-queue", mock(Destination.class));
-        EventHandler eventHandler = mock(EventHandler.class);
+        EventHandler<Event> eventHandler = mock(EventHandler.class);
         consumerHandlers.put(consumerConfiguration, eventHandler);
         bundle = AmqpBundle.<AppConfiguration>builder().using(() -> connection).with((configuration -> consumerHandlers)).build();
         bundle.run(configuration, environment);
-        verify(lifecycleEnvironment).manage(new AmqpConsumerContainer(consumerConfiguration, eventHandler, connection));
+        verify(lifecycleEnvironment).manage(new AmqpConsumerContainer<Event>(consumerConfiguration, eventHandler, connection));
     }
     
     @Test

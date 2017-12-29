@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import com.gojek.amqp.AmqpConnection.ConnectionPoolListener;
-import com.gojek.amqp.event.EventHandler;
 import com.gojek.core.event.ConsumerConfiguration;
+import com.gojek.core.event.EventHandler;
 import com.gojek.util.metrics.GenericObjectPoolGaugeSet;
 import com.google.common.collect.Maps;
 import com.rabbitmq.client.Channel;
@@ -34,7 +34,7 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
     
     private Supplier<AmqpConnection> supplier;
     
-    private Function<T, Map<ConsumerConfiguration, EventHandler>> consumers;
+    private Function<T, Map<ConsumerConfiguration, EventHandler<?>>> consumers;
     
     public static final String HEALTH_NAME = "amqp";
     
@@ -46,7 +46,7 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
      * @param supplier
      * @param consumers
      */
-    private AmqpBundle(boolean enableHealthCheck, boolean enableMetrics, Supplier<AmqpConnection> supplier, Function<T, Map<ConsumerConfiguration, EventHandler>> consumers) {
+    private AmqpBundle(boolean enableHealthCheck, boolean enableMetrics, Supplier<AmqpConnection> supplier, Function<T, Map<ConsumerConfiguration, EventHandler<?>>> consumers) {
         this.enableHealthCheck = enableHealthCheck;
         this.enableMetrics = enableMetrics;
         if (supplier == null) {
@@ -59,7 +59,8 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
         this.consumers = consumers;
     }
     
-    @Override
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
     public void run(T configuration, Environment environment) throws Exception {
         AmqpConnection connection = supplier.get();
         connection.register(new ConnectionPoolListener() {
@@ -70,7 +71,7 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
             }
         });
         environment.lifecycle().manage(new AmqpConnectionManager(configuration.getAmqpConfiguration(), connection));
-        for (Entry<ConsumerConfiguration, EventHandler> entry : consumers.apply(configuration).entrySet()) {
+        for (Entry<ConsumerConfiguration, EventHandler<?>> entry : consumers.apply(configuration).entrySet()) {
             environment.lifecycle().manage(new AmqpConsumerContainer(entry.getKey(), entry.getValue(), connection));
         }
         if (enableHealthCheck) {
@@ -102,7 +103,7 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
         
         private Supplier<AmqpConnection> supplier;
         
-        private Function<T, Map<ConsumerConfiguration, EventHandler>> consumers;
+        private Function<T, Map<ConsumerConfiguration, EventHandler<?>>> consumers;
         
         /**
          * @return
@@ -133,7 +134,7 @@ public class AmqpBundle<T extends Configuration & AmqpSupport> implements Config
          * @param consumers
          * @return
          */
-        public Builder<T> with(Function<T, Map<ConsumerConfiguration, EventHandler>> consumers) {
+        public Builder<T> with(Function<T, Map<ConsumerConfiguration, EventHandler<?>>> consumers) {
             this.consumers = consumers;
             return this;
         }

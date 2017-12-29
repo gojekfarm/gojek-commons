@@ -24,7 +24,7 @@ server:
 jpa:
   migrate: "true"
   driverClass: "org.postgresql.Driver"
-  user: ${DB_USER:-gokilat}
+  user: ${DB_USER:-ganesh.s}
   password: ${DB_PASSWORD:-}
   url: jdbc:postgresql://${DB_HOST:-localhost}:${DB_PORT:-5432}/${DB_NAME:-ds}?autoReconnect=true
   properties:
@@ -57,6 +57,8 @@ amqp:
   maxChannels: ${RABBITMQ_MAX_CHANNELS:-11}
   minChannels: ${RABBITMQ_MIN_CHANNELS:-5}
   maxIdleChannels: ${RABBITMQ_MAX_IDLE_CHANNELS:-5}
+  hosts:
+    - localhost
     
 queue:
   driverStatusDestination:
