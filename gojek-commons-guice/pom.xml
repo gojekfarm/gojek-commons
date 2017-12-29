@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.gojek</groupId>
 		<artifactId>gojek-commons</artifactId>
-		<version>2.1.0</version>
+		<version>2.1.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>gojek-commons-guice</artifactId>
 	<name>gojek-commons-guice-bundle</name>
