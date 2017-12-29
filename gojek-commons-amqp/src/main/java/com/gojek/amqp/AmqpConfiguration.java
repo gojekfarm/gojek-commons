@@ -130,18 +130,31 @@ public class AmqpConfiguration {
 		this.maxIdleChannels = maxIdleChannels;
 	}
 
+	/**
+	 *
+	 * @return the networkRecoveryInterval
+	 */
 	public Integer getNetworkRecoveryInterval() {
 		return networkRecoveryInterval;
 	}
 
+	/**
+	 * @param networkRecoveryInterval in ms to set
+	 */
 	public void setNetworkRecoveryInterval(Integer networkRecoveryInterval) {
 		this.networkRecoveryInterval = networkRecoveryInterval;
 	}
 
+	/**
+	 * @return the hosts
+	 */
 	public List<String> getHosts() {
 		return hosts;
 	}
 
+	/**
+	 * @return the addresses of hosts
+	 */
 	public Address[] getAddresses() {
 		if (addresses == null) {
 			addresses = new Address[hosts.size()];
@@ -152,6 +165,9 @@ public class AmqpConfiguration {
 		return addresses;
 	}
 
+	/**
+	 * @param hosts running in rabbitmq cluster
+	 */
 	public void setHosts(List<String> hosts) {
 		this.hosts = hosts;
 	}
