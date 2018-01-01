@@ -39,6 +39,9 @@ amqp:
   maxChannels: ${RABBITMQ_MAX_CHANNELS:-10}
   minChannels: ${RABBITMQ_MIN_CHANNELS:-5}
   maxIdleChannels: ${RABBITMQ_MAX_IDLE_CHANNELS:-5}
+  # Known broker host list for auto connection recovery
+  hosts:
+    - localhost
 ```
 
 Add the bundle to your application class,
