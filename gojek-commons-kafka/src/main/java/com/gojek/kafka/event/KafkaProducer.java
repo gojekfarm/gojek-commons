@@ -5,6 +5,7 @@ package com.gojek.kafka.event;
 
 import java.util.Map;
 
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import com.gojek.core.event.Destination;
@@ -16,12 +17,34 @@ import com.gojek.core.event.Producer;
  */
 public class KafkaProducer<K, E> implements Producer<E> {
 	
-	private org.apache.kafka.clients.producer.KafkaProducer<K, E> producer;
+	private org.apache.kafka.clients.producer.Producer<K, E> producer;
 	
 	/**
 	 * @param configs
 	 */
 	public KafkaProducer(Map<String, Object> configs) {
+		this(configs, null, null);
+	}
+	
+	/**
+	 * @param producer
+	 */
+	public KafkaProducer(org.apache.kafka.clients.producer.Producer<K, E> producer) {
+		this.producer = producer;
+	}
+	
+	/**
+	 * @param configs
+	 * @param keySerializer
+	 * @param valueSerializer
+	 */
+	public KafkaProducer(Map<String, Object> configs, Class<?> keySerializer, Class<?> valueSerializer) {
+		if (keySerializer != null) {
+			configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
+		}
+		if (valueSerializer != null) {
+			configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer);
+		}
 		this.producer = new org.apache.kafka.clients.producer.KafkaProducer<>(configs);
 	}
 

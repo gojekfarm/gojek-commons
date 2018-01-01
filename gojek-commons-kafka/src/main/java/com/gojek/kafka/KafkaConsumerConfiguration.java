@@ -5,6 +5,8 @@ package com.gojek.kafka;
 
 import java.util.List;
 
+import org.apache.kafka.common.serialization.StringDeserializer;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gojek.core.event.ConsumerConfiguration;
@@ -22,6 +24,10 @@ public class KafkaConsumerConfiguration extends ConsumerConfiguration {
 	private boolean commitSync;
 	
 	private Long pollTimeout = DEFAULT_POLL_TIMEOUT;
+	
+	private Class<?> keyDeserializer = StringDeserializer.class;
+	
+	private Class<?> valueDeserializer = StringDeserializer.class;
 	
 	public static final Long DEFAULT_POLL_TIMEOUT = 100L;
 	
@@ -85,6 +91,34 @@ public class KafkaConsumerConfiguration extends ConsumerConfiguration {
 		this.pollTimeout = pollTimeout;
 	}
 	
+	/**
+	 * @return the keyDeserializer
+	 */
+	public Class<?> getKeyDeserializer() {
+		return keyDeserializer;
+	}
+
+	/**
+	 * @param keyDeserializer the keyDeserializer to set
+	 */
+	public void setKeyDeserializer(Class<?> keyDeserializer) {
+		this.keyDeserializer = keyDeserializer;
+	}
+
+	/**
+	 * @return the valueDeserializer
+	 */
+	public Class<?> getValueDeserializer() {
+		return valueDeserializer;
+	}
+
+	/**
+	 * @param valueDeserializer the valueDeserializer to set
+	 */
+	public void setValueDeserializer(Class<?> valueDeserializer) {
+		this.valueDeserializer = valueDeserializer;
+	}
+
 	@Override
 	@JsonIgnore
 	public String getQueueName() {

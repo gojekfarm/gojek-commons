@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.gojek.core.event.Consumer;
 import com.gojek.core.event.EventHandler;
 import com.gojek.kafka.KafkaConsumerConfiguration;
+import com.gojek.kafka.KafkaException;
 import com.google.common.collect.Maps;
 
 /**
@@ -88,9 +90,20 @@ public class KafkaConsumer<K, E> implements Consumer<E> {
 	 * @return
 	 */
 	private static <K, E> org.apache.kafka.clients.consumer.KafkaConsumer<K, E> createConsumer(Map<String, Object> configs, KafkaConsumerConfiguration configuration) {
-		org.apache.kafka.clients.consumer.KafkaConsumer<K, E> consumer = new org.apache.kafka.clients.consumer.KafkaConsumer<K, E>(configs);
-		consumer.subscribe(configuration.getTopics());
-		return consumer;
+		try {
+			if (configuration.getKeyDeserializer() != null) {
+				configs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, configuration.getKeyDeserializer().getName());
+			}
+			if (configuration.getValueDeserializer() != null) {
+				configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, configuration.getValueDeserializer().getName());
+			}
+			org.apache.kafka.clients.consumer.KafkaConsumer<K, E> consumer = new org.apache.kafka.clients.consumer.KafkaConsumer<K, E>(configs);
+			consumer.subscribe(configuration.getTopics());
+			return consumer;
+		} catch (Exception e) {
+			logger.error("Failed while creating a consumer", e);
+			throw new KafkaException("Failed while creating a consumer", e);
+		}
 	}
 
 	@Override

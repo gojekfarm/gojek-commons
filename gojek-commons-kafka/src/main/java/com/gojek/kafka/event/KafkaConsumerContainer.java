@@ -83,6 +83,7 @@ public class KafkaConsumerContainer<K, E> implements ShutdownListener, Managed {
 		for (KafkaConsumer<K, E> consumer : this.consumers) {
 			consumer.stop();
 		}
+		this.consumers.clear();
 	}
 
 	@Override
@@ -92,6 +93,15 @@ public class KafkaConsumerContainer<K, E> implements ShutdownListener, Managed {
 		if (! stopped) {
 			this.addConsumer();
 		}
+	}
+	
+	/**
+	 * For unit testing
+	 * 
+	 * @return
+	 */
+	List<KafkaConsumer<K, E>> getConsumers() {
+		return consumers;
 	}
 
 	@Override
