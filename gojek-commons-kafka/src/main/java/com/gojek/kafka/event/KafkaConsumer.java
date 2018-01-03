@@ -4,6 +4,7 @@
 package com.gojek.kafka.event;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -74,14 +75,26 @@ public class KafkaConsumer<K, E> implements Consumer<E> {
 	 * @param consumer
 	 * @param configuration
 	 * @param handler
+	 * @param threadFactory
 	 * @param shutdownListener
 	 */
-	public KafkaConsumer(org.apache.kafka.clients.consumer.Consumer<K, E> consumer, KafkaConsumerConfiguration configuration, EventHandler<E> handler, ThreadFactory thrreadFactory, Consumer.ShutdownListener shutdownListener) {
+	public KafkaConsumer(org.apache.kafka.clients.consumer.Consumer<K, E> consumer, KafkaConsumerConfiguration configuration, EventHandler<E> handler, ThreadFactory threadFactory, Consumer.ShutdownListener shutdownListener) {
+		this(consumer, configuration, handler, shutdownListener, Executors.newSingleThreadExecutor(threadFactory));
+	}
+	
+	/**
+	 * @param consumer
+	 * @param configuration
+	 * @param handler
+	 * @param shutdownListener
+	 * @param executor
+	 */
+	public KafkaConsumer(org.apache.kafka.clients.consumer.Consumer<K, E> consumer, KafkaConsumerConfiguration configuration, EventHandler<E> handler, Consumer.ShutdownListener shutdownListener, ExecutorService executor) {
 		this.consumer = consumer;
 		this.configuration = configuration;
 		this.handler = handler;
 		this.shutdownListener = shutdownListener;
-		this.executor = Executors.newSingleThreadExecutor(thrreadFactory);
+		this.executor = executor;
 	}
 	
 	/**
@@ -105,6 +118,13 @@ public class KafkaConsumer<K, E> implements Consumer<E> {
 			throw new KafkaException("Failed while creating a consumer", e);
 		}
 	}
+	
+	/**
+	 * @return
+	 */
+	public boolean isRunning() {
+		return running;
+	}
 
 	@Override
 	public void start() {
@@ -113,10 +133,10 @@ public class KafkaConsumer<K, E> implements Consumer<E> {
 		
 		executor.execute(() -> {
 			while (running) {
-				ConsumerRecords<K, E> records = null;
+				Optional<ConsumerRecords<K, E>> records = Optional.empty();
 				try {
-					records = this.consumer.poll(configuration.getPollTimeout());
-					if (records.count() == 0) {
+					records = Optional.of(this.consumer.poll(configuration.getPollTimeout()));
+					if (records.get().count() == 0) {
 						continue;
 					}
 				} catch (WakeupException e) {
@@ -126,18 +146,20 @@ public class KafkaConsumer<K, E> implements Consumer<E> {
 					break;
 				}
 				
-				records.forEach(record -> {
-					Status status = Status.soft_failure;
-					try {
-						status = receive(record);
-					} catch (Exception e) {
-						logger.error("Failed while handling the event", e);
-					} finally {
-						if (status == null && status != Status.success) {
-							logger.info("Failed while handling the event. Status - {}", status); 
+				if (records != null) {
+					records.orElse(ConsumerRecords.empty()).forEach(record -> {
+						Status status = Status.soft_failure;
+						try {
+							status = receive(record);
+						} catch (Exception e) {
+							logger.error("Failed while handling the event", e);
+						} finally {
+							if (status == null && status != Status.success) {
+								logger.info("Failed while handling the event. Status - {}", status); 
+							}
 						}
-					}
-				});
+					});
+				}
 				
 				if (configuration.isCommitSync()) {
 					this.consumer.commitSync();
@@ -146,6 +168,8 @@ public class KafkaConsumer<K, E> implements Consumer<E> {
 				}
 			}
 			try {
+				// Ensure running is set to false
+				running = false;
 				this.consumer.close();
 			} finally {
 				this.shutdownListener.handleShutdown(this);

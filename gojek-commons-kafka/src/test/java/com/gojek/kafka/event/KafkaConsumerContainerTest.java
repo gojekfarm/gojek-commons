@@ -40,12 +40,13 @@ public class KafkaConsumerContainerTest {
 	
 	private List<KafkaConsumer<String, String>> consumers;
 	
+	@SuppressWarnings("unchecked")
 	@BeforeMethod
 	public void setup() {
 		kafkaConfigs = Maps.newHashMap();
 		configuration = new KafkaConsumerConfiguration(Lists.newArrayList("test_topic"), true, 100L, 3);
 		container = spy(new KafkaConsumerContainer<>(kafkaConfigs, configuration, eventHandler));
-		consumers = IntStream.range(0, configuration.getMaxQueueConsumers()).mapToObj(i -> mock(KafkaConsumer.class)).collect(Collectors.toList());
+		consumers = IntStream.range(0, configuration.getMaxQueueConsumers()).mapToObj(i -> (KafkaConsumer<String, String>) mock(KafkaConsumer.class)).collect(Collectors.toList());
 		doReturn(consumers.get(0), consumers.subList(1, consumers.size()).toArray(new KafkaConsumer[0])).when(container).createConsumer();
 	}
 
