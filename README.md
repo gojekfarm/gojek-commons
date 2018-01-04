@@ -20,6 +20,7 @@ GoJek Commons is built on top of [Dropwizard Framework](http://www.dropwizard.io
 * Data Access - [ActiveJPA](https://github.com/ActiveJpa/activejpa) (Relational Databases)
 * Dependency Injection - [Guice](https://github.com/google/guice)
 * Message Broker - AMQP ([Rabbitmq](https://www.rabbitmq.com/))
+* Event Streaming - Kafka
 * Caching - Redis ([Jedis](https://github.com/xetorthio/jedis))
 * Metrics - [Dropwizard Metrics](http://metrics.dropwizard.io/)
 * Jobs - [Quartz](http://www.quartz-scheduler.org/)
@@ -33,7 +34,7 @@ GoJek Commons is built on top of [Dropwizard Framework](http://www.dropwizard.io
      <dependency>
        <groupId>com.gojek</groupId>
        <artifactId>gojek-commons-application</artifactId>
-       <version>2.0.1</version>
+       <version>2.1.1</version>
      </dependency>
    </dependencies>
    
@@ -62,11 +63,16 @@ GoJek Commons is built on top of [Dropwizard Framework](http://www.dropwizard.io
 * Database migrations using [Flyway](https://flywaydb.org/)
 
 ### Amqp Support
-[gojek-commons-jpa](/gojek-commons-amqp) exposes a AmqpBundle with,
+[gojek-commons-amqp](/gojek-commons-amqp) exposes a AmqpBundle with,
 * Rabbitmq as message broker
 * Amqp Health check
 * Connection pool metrics
 * Support for retrying failed messages before dead lettering
+
+### Kafka Support
+[gojek-commons-kafka](/gojek-commons-kafka) exposes a KafkaBundle with,
+* Basic support for producing and consuming messages
+* Pool of consumers
 
 ### Cache Support
 [gojek-commons-cache](/gojek-commons-cache) exposes a AmqpBundle with,
