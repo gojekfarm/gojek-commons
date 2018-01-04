@@ -25,6 +25,7 @@
 		<module>gojek-commons-cache</module>
 		<!--module>gojek-commons-examples</module-->
 		<module>gojek-commons-job</module>
+		<module>gojek-commons-kafka</module>
 	</modules>
 	<properties>
 		<testng.version>6.11</testng.version>

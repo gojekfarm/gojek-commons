@@ -5,6 +5,7 @@ package com.gojek.ds.service;
 
 import javax.inject.Inject;
 
+import com.gojek.core.event.Event;
 import com.gojek.core.event.QueuedProducer;
 import com.gojek.ds.DSConfiguration;
 import com.gojek.ds.QueueConfiguration;
@@ -17,7 +18,7 @@ import com.google.common.eventbus.Subscribe;
  */
 public class EventPublisherService {
 
-    private QueuedProducer producer;
+    private QueuedProducer<Event> producer;
 
     private QueueConfiguration configuration;
 
@@ -26,7 +27,7 @@ public class EventPublisherService {
      * @param producer
      */
     @Inject
-    public EventPublisherService(DSConfiguration configuration, QueuedProducer producer) {
+    public EventPublisherService(DSConfiguration configuration, QueuedProducer<Event> producer) {
         this.producer = producer;
         this.configuration = configuration.getQueueConfiguration();
     }
