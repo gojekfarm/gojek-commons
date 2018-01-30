@@ -18,7 +18,8 @@ public class CacheConfiguration {
     private Integer maxIdleConnections;
 
     private Integer minConnections;
-    
+
+    private Long commandTimeoutInMs;
     /**
      * Default constructor
      */
@@ -32,15 +33,17 @@ public class CacheConfiguration {
 	 * @param maxConnections
 	 * @param maxIdleConnections
 	 * @param minConnections
+     * @param commandTimeoutInMs
 	 */
 	public CacheConfiguration(String host, int port, Integer timeout, Integer maxConnections,
-			Integer maxIdleConnections, Integer minConnections) {
+			Integer maxIdleConnections, Integer minConnections, Long commandTimeoutInMs) {
 		this.host = host;
 		this.port = port;
 		this.timeout = timeout;
 		this.maxConnections = maxConnections;
 		this.maxIdleConnections = maxIdleConnections;
 		this.minConnections = minConnections;
+		this.commandTimeoutInMs = commandTimeoutInMs;
 	}
 
 	/**
@@ -146,5 +149,16 @@ public class CacheConfiguration {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Long getCommandTimeoutInMs() {
+        return commandTimeoutInMs;
+    }
+
+    /**
+     * @param commandTimeoutInMs
+     */
+    public void setCommandTimeoutInMs(Long commandTimeoutInMs) {
+        this.commandTimeoutInMs = commandTimeoutInMs;
     }
 }

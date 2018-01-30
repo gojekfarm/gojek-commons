@@ -47,13 +47,13 @@ public class CacheHealthCheckTest {
     
     @Test
     public void shouldReturnHealthy() throws Exception {
-        connection.init(new CacheConfiguration("localhost", 6378, 500, 2, 1, 1));
+        connection.init(new CacheConfiguration("localhost", 6378, 500, 2, 1, 1, 500L));
         assertTrue(check.check().isHealthy());
     }
     
     @Test(expectedExceptions=CacheException.class)
     public void shouldReturnUnHealthy() throws Exception {
-        connection.init(new CacheConfiguration("localhost", 6378, 500, 1, 1, 1));
+        connection.init(new CacheConfiguration("localhost", 6378, 500, 1, 1, 1, 500L));
         redisServer.stop();
         check.check().isHealthy();
     }

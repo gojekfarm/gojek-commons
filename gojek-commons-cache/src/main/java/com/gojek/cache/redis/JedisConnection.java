@@ -44,13 +44,15 @@ public class JedisConnection {
      * @param maxConnections
      * @param minConnections
      * @param maxIdleConnections
+     * @param commandTimeoutInMs
      * @return
      */
-    protected JedisPoolConfig constructPoolConfig(int maxConnections, int minConnections, int maxIdleConnections) {
+    protected JedisPoolConfig constructPoolConfig(int maxConnections, int minConnections, int maxIdleConnections, long commandTimeoutInMs) {
         JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxIdle(maxIdleConnections);
         config.setMaxTotal(maxConnections);
         config.setMinIdle(minConnections);
+        config.setMaxWaitMillis(commandTimeoutInMs);
         return config;
     }
     
@@ -58,7 +60,7 @@ public class JedisConnection {
      * @param configuration
      */
     public void init(CacheConfiguration configuration) {
-        JedisPoolConfig poolConfig = constructPoolConfig(configuration.getMaxConnections(), configuration.getMinConnections(), configuration.getMaxIdleConnections());
+        JedisPoolConfig poolConfig = constructPoolConfig(configuration.getMaxConnections(), configuration.getMinConnections(), configuration.getMaxIdleConnections(), configuration.getCommandTimeoutInMs());
         this.pool = constructPool(configuration, poolConfig);
         if (listener.isPresent()) {
             listener.get().onPoolInitialized(pool.getPool());

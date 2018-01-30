@@ -36,7 +36,7 @@ public class AtomicExecutorTest {
     public void setup() throws IOException {
         redisServer = new RedisServer(6379);
         redisServer.start();
-        CacheConfiguration configuration = new CacheConfiguration("localhost", 6379, 5, 2, 2, 2);
+        CacheConfiguration configuration = new CacheConfiguration("localhost", 6379, 5, 2, 2, 2, 5L);
         connection = new JedisConnection();
         connection.init(configuration);
         retryer = RetryerBuilder.<Boolean>newBuilder().withStopStrategy(StopStrategies.stopAfterAttempt(2)).build();

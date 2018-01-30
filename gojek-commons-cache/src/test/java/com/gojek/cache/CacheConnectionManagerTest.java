@@ -35,7 +35,7 @@ public class CacheConnectionManagerTest {
     public void setup() throws IOException {
         redisServer = new RedisServer(6379);
         redisServer.start();
-        configuration = new CacheConfiguration("localhost", 6379, 500, 24, 4, 2);
+        configuration = new CacheConfiguration("localhost", 6379, 500, 24, 4, 2, 500L);
         connection = mock(JedisConnection.class);
         cacheConnectionManager = spy(new CacheConnectionManager(configuration, connection));
     }
