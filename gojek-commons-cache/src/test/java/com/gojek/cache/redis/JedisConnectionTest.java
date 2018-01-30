@@ -39,7 +39,7 @@ public class JedisConnectionTest {
     
     @BeforeMethod
     public void setup() {
-        this.configuration = new CacheConfiguration("localhost", 6379, 5, 2, 2, 2);
+        this.configuration = new CacheConfiguration("localhost", 6379, 5, 2, 2, 2, 5L);
         connection = new JedisConnection();
     }
 

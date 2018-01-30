@@ -33,6 +33,7 @@ public class CacheConfiguration {
 	 * @param maxConnections
 	 * @param maxIdleConnections
 	 * @param minConnections
+     * @param commandTimeoutInMs
 	 */
 	public CacheConfiguration(String host, int port, Integer timeout, Integer maxConnections,
 			Integer maxIdleConnections, Integer minConnections, Long commandTimeoutInMs) {
