@@ -83,6 +83,7 @@ public class FixedRetryHandler<E> implements EventHandler<E> {
 			}
 			return Status.hard_failure;
 		}
+		waitBetweenRetries(failureCount, maxRetries);
 		String value = Serializer.DEFAULT_JSON_SERIALIZER.serialize(event);
 		BasicProperties properties = new BasicProperties.Builder().headers(headers).build();
 		
@@ -128,5 +129,12 @@ public class FixedRetryHandler<E> implements EventHandler<E> {
 	 */
 	protected Status handleInternal(E event) {
 		return Status.success;
+	}
+
+	/**
+	 * @param failures
+	 * @param maxRetries
+	 */
+	protected void waitBetweenRetries(int failures, int maxRetries) {
 	}
 }
