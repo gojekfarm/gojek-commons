@@ -22,6 +22,7 @@ import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 import org.quartz.ScheduleBuilder;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -184,7 +185,8 @@ public class JobManager implements Managed, ServerLifecycleListener {
     public List<JobDetail> addJob(Job job) {
         List<JobDetail> jobDetails = Lists.newArrayList();
         if (!job.isEnabled()) {
-            logger.info("Job - {} is not enabled", job.getJobClass());
+		logger.info("Job - {} is not enabled", job.getName());
+		deleteJob(job);
             return jobDetails;
         }
         if (job.isCollection()) {
@@ -288,5 +290,23 @@ public class JobManager implements Managed, ServerLifecycleListener {
 	    } else {
 	        return SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(schedule.getInterval()).repeatForever();	        
 	    }
+	}
+
+    private void deleteJob(Job job) {
+        try {
+            boolean result = job.isCollection() ? scheduler.deleteJobs(deleteJobCollection(job)) :
+                    scheduler.deleteJob(new JobKey(job.getName(), job.getGroupName()));
+            if (!result) {
+                logger.warn("Job does not exist - " + job.getName());
+            }
+        } catch (SchedulerException e) {
+            logger.error("Failed while deleting the job - " + job.getName(), e);
+            throw new JobException("Failed while deleting the job", e);
+        }
+    }
+
+	private List<JobKey> deleteJobCollection(Job job) {
+		JobCollection collection = constructJobCollection(job.getJobCollectionClass());
+		return collection.getJobs(job.getGroupName(), job.getSchedule()).stream().map(j -> new JobKey(j.getName(), j.getGroupName())).collect(Collectors.toList());
 	}
 }

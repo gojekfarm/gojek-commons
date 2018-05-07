@@ -159,7 +159,91 @@ public class JobManagerTest {
         assertEquals(trigger.getRepeatInterval(), schedule.getInterval() * 1000);
         assertEquals(trigger.getRepeatCount(), SimpleTrigger.REPEAT_INDEFINITELY);
     }
-    
+
+    @Test
+    public void shouldDeleteExistingJobWhenJobIsDisabled() throws Exception {
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("some-key", "some-value");
+        Schedule schedule = new Schedule(1800);
+
+        Job job = new Job("some-job", TestJob.class, "some-group", schedule, data, true);
+        jobManager.addJob(job);
+
+        job = new Job("some-job", TestJob.class, "some-group", schedule, data, false);
+        jobManager.addJob(job);
+
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job", "some-group")));
+    }
+
+    @Test
+    public void shouldDeleteExistingJobCollectionWhenJobCollectionIsDisabled() throws Exception {
+        List<String> jobs = Lists.newArrayList("some-job-1", "some-job-2");
+        doReturn(new TestJobCollection(jobs)).when(jobManager).constructJobCollection(TestJobCollection.class);
+
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("some-key", "some-value");
+        Schedule schedule = new Schedule(1800);
+
+        Job job = new Job("some-job-collection", null, "some-group", schedule, data, true);
+        job.setJobCollectionClass(TestJobCollection.class);
+        jobManager.addJob(job);
+
+        job = new Job("some-job-collection", null, "some-group", schedule, data, false);
+        job.setJobCollectionClass(TestJobCollection.class);
+        jobManager.addJob(job);
+
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job-1", "some-group")));
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job-2", "some-group")));
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job-collection", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job-1", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job-2", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job-collection", "some-group")));
+    }
+
+    @Test
+    public void shouldInvokeDeleteJobWhenJobIsDisabledWhenNoJobsExist() throws Exception {
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("some-key", "some-value");
+        Schedule schedule = new Schedule(1800);
+
+        Job job = new Job("some-job", TestJob.class, "some-group", schedule, data, false);
+        jobManager.addJob(job);
+
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job", "some-group")));
+    }
+
+    @Test
+    public void shouldInvokeDeleteJobCollectionWhenJobCollectionIsDisabledWhenNoJobsExist() throws Exception {
+        List<String> jobs = Lists.newArrayList("some-job-1", "some-job-2");
+        doReturn(new TestJobCollection(jobs)).when(jobManager).constructJobCollection(TestJobCollection.class);
+
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("some-key", "some-value");
+        Schedule schedule = new Schedule(1800);
+
+        Job job = new Job("some-job-collection", null, "some-group", schedule, data, false);
+        job.setJobCollectionClass(TestJobCollection.class);
+        jobManager.addJob(job);
+
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job-1", "some-group")));
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job-2", "some-group")));
+        assertNull(jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-job-collection", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job-1", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job-2", "some-group")));
+        assertNull(jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job-collection", "some-group")));
+    }
+
+    @Test(expectedExceptions=JobException.class, expectedExceptionsMessageRegExp = "Failed while deleting the job")
+    public void shouldThrowJobExceptionWhenSchedulerIsNotActive() throws Exception {
+        jobManager.stop();
+
+        Job job = new Job("some-job", TestJob.class, "some-group", null, Maps.newHashMap(), false);
+
+        jobManager.addJob(job);
+    }
+
     @Test
     public void shouldScheduleNewJobWithCronTrigger() throws Exception {
         Map<String, Object> data = Maps.newHashMap();
