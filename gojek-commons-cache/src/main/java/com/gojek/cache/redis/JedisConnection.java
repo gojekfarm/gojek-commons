@@ -130,7 +130,7 @@ public class JedisConnection {
      * @author ganeshs
      *
      */
-    private class MyJedisPool extends JedisPool {
+    public static class MyJedisPool extends JedisPool {
 
         /**
          * @param poolConfig
