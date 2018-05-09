@@ -20,6 +20,9 @@ public class CacheConfiguration {
     private Integer minConnections;
 
     private Long commandTimeoutInMs;
+
+    private Integer database = 0;
+
     /**
      * Default constructor
      */
@@ -160,5 +163,16 @@ public class CacheConfiguration {
      */
     public void setCommandTimeoutInMs(Long commandTimeoutInMs) {
         this.commandTimeoutInMs = commandTimeoutInMs;
+    }
+
+    public Integer getDatabase() {
+        return database;
+    }
+
+    /**
+     * @param database
+     */
+    public void setDatabase(Integer database) {
+        this.database = database;
     }
 }
