@@ -73,7 +73,7 @@ public class JedisConnection {
      * @return
      */
     protected MyJedisPool constructPool(CacheConfiguration configuration, JedisPoolConfig poolConfig){
-        return new MyJedisPool(poolConfig, configuration.getHost(), configuration.getPort(), configuration.getTimeout(), configuration.getPassword());
+        return new MyJedisPool(poolConfig, configuration.getHost(), configuration.getPort(), configuration.getTimeout(), configuration.getPassword(), configuration.getDatabase());
     }
 
     /**
@@ -139,8 +139,8 @@ public class JedisConnection {
          * @param timeout
          * @param password
          */
-        public MyJedisPool(GenericObjectPoolConfig poolConfig, String host, int port, int timeout, String password) {
-            super(poolConfig, host, port, timeout, password);
+        public MyJedisPool(GenericObjectPoolConfig poolConfig, String host, int port, int timeout, String password, int database) {
+            super(poolConfig, host, port, timeout, password, database);
         }
 
         /**
