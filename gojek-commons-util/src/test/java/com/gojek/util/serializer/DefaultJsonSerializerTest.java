@@ -6,6 +6,7 @@ package com.gojek.util.serializer;
 import static org.testng.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+import java.time.Instant;
 
 import org.testng.annotations.Test;
 
@@ -17,27 +18,30 @@ public class DefaultJsonSerializerTest {
 
 	@Test
 	public void shouldSerializeObjectToJson() {
-		AnotherDummy anotherDummy = new AnotherDummy(new Dummy("test123", 1234L));
+		Instant instant = Instant.ofEpochMilli(92554380000L);
+		AnotherDummy anotherDummy = new AnotherDummy(new Dummy("test123", 1234L, instant));
 		DefaultJsonSerializer serializer = new DefaultJsonSerializer();
-		assertEquals(serializer.serialize(anotherDummy), "{\"dummy\":{\"string_value\":\"test123\",\"long_value\":1234}}");
+		assertEquals(serializer.serialize(anotherDummy), "{\"dummy\":{\"string_value\":\"test123\",\"long_value\":1234,\"dummy_instant\":\"1972-12-07T05:33:00Z\"}}");
 	}
 
 	@Test
 	public void shouldDeserializeJsonToObject() {
 		DefaultJsonSerializer serializer = new DefaultJsonSerializer();
-		AnotherDummy anotherDummy = serializer.deserialize("{\"dummy\":{\"string_value\":\"test123\",\"long_value\":1234}}", AnotherDummy.class);
+		AnotherDummy anotherDummy = serializer.deserialize("{\"dummy\":{\"string_value\":\"test123\",\"long_value\":1234,\"dummy_instant\":\"1972-12-07T05:33:00Z\"}}", AnotherDummy.class);
 		assertEquals(anotherDummy.getDummy().getStringValue(), "test123");
 		assertEquals(anotherDummy.getDummy().getLongValue(), Long.valueOf(1234));
+		assertEquals(anotherDummy.getDummy().getDummyInstant(), Instant.ofEpochMilli(92554380000L));
 	}
 
 	@Test
 	public void shouldDeserializeStreamToObject() {
 		DefaultJsonSerializer serializer = new DefaultJsonSerializer();
-		String input = "{\"dummy\":{\"string_value\":\"test123\",\"long_value\":1234}}";
+		String input = "{\"dummy\":{\"string_value\":\"test123\",\"long_value\":1234,\"dummy_instant\":\"1972-12-07T05:33:00Z\"}}";
 		ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(input.getBytes());
 		AnotherDummy anotherDummy = serializer.deserialize(byteArrayInputStream, AnotherDummy.class);
 		assertEquals(anotherDummy.getDummy().getStringValue(), "test123");
 		assertEquals(anotherDummy.getDummy().getLongValue(), Long.valueOf(1234));
+		assertEquals(anotherDummy.getDummy().getDummyInstant(), Instant.ofEpochMilli(92554380000L));
 	}
 
 	public static class AnotherDummy {
@@ -80,6 +84,8 @@ public class DefaultJsonSerializerTest {
 
 		private Long longValue;
 
+		private Instant dummyInstant;
+
 		public Dummy() {
 		}
 
@@ -87,9 +93,10 @@ public class DefaultJsonSerializerTest {
 		 * @param stringValue
 		 * @param longValue
 		 */
-		public Dummy(String stringValue, Long longValue) {
+		public Dummy(String stringValue, Long longValue, Instant instant) {
 			this.stringValue = stringValue;
 			this.longValue = longValue;
+			this.dummyInstant = instant;
 		}
 
 		/**
@@ -120,6 +127,21 @@ public class DefaultJsonSerializerTest {
 		 */
 		public void setLongValue(Long longValue) {
 			this.longValue = longValue;
+		}
+
+		/**
+		 * @return the instant
+		 */
+		public Instant getDummyInstant() {
+			return dummyInstant;
+		}
+
+		/**
+		 * @param dummyInstant
+		 *            the dummyInstant to set
+		 */
+		public void setDummyInstant(Instant dummyInstant) {
+			this.dummyInstant = dummyInstant;
 		}
 	}
 }
