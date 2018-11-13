@@ -30,7 +30,7 @@
 	<properties>
 		<testng.version>6.14.3</testng.version>
 		<slf4j.version>1.7.24</slf4j.version>
-		<jackson.version>2.9.6</jackson.version>
+		<jackson.version>2.9.7</jackson.version>
 		<mockito.version>2.7.22</mockito.version>
 		<spring.version>4.3.2.RELEASE</spring.version>
 		<hibernate.version>5.3.3.Final</hibernate.version>

@@ -6,16 +6,14 @@ package com.gojek.util.serializer;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 /**
@@ -41,6 +39,7 @@ public abstract class AbstractJacksonSerializer extends Serializer {
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.NONE);
 		mapper.setVisibility(PropertyAccessor.GETTER, Visibility.PROTECTED_AND_PUBLIC);
 		mapper.setVisibility(PropertyAccessor.SETTER, Visibility.PROTECTED_AND_PUBLIC);
+		mapper.setDateFormat(new StdDateFormat());
 		if (propertyNamingStrategy != null) {
 			mapper.setPropertyNamingStrategy(propertyNamingStrategy);
 		}
@@ -50,6 +49,7 @@ public abstract class AbstractJacksonSerializer extends Serializer {
 	}
 
 	protected void registerModules(ObjectMapper mapper) {
+		mapper.registerModule(new JavaTimeModule());
 		mapper.registerModule(new JodaModule());
 		mapper.registerModule(new PropertyFilterModule());
 	}
