@@ -60,6 +60,8 @@ public class JobConfiguration {
 
         private String cron;
 
+        private int cronMisfireInstruction;
+
         private Integer interval;
         
         /**
@@ -108,6 +110,20 @@ public class JobConfiguration {
          */
         public void setInterval(Integer interval) {
             this.interval = interval;
+        }
+
+        /**
+         * @return the cron misfire instruction
+         */
+        public int getCronMisfireInstruction() {
+            return cronMisfireInstruction;
+        }
+
+        /**
+         * @param cronMisfireInstruction one of {@value org.quartz.CronTrigger#MISFIRE_INSTRUCTION_FIRE_ONCE_NOW} or {@value org.quartz.CronTrigger#MISFIRE_INSTRUCTION_DO_NOTHING}
+         */
+        public void setCronMisfireInstruction(int cronMisfireInstruction) {
+            this.cronMisfireInstruction = cronMisfireInstruction;
         }
     }
 

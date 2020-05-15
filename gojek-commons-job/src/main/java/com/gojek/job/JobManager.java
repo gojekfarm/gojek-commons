@@ -17,19 +17,7 @@ import org.eclipse.jetty.server.Server;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Seconds;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
-import org.quartz.ScheduleBuilder;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.Trigger;
-import org.quartz.TriggerKey;
-import org.quartz.TriggerListener;
+import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.spi.JobFactory;
 import org.slf4j.Logger;
@@ -286,7 +274,14 @@ public class JobManager implements Managed, ServerLifecycleListener {
 	        return null;
 	    }
 	    if (nonNull(schedule.getCron())) {
-	        return CronScheduleBuilder.cronSchedule(schedule.getCron()).inTimeZone(DateTimeZone.UTC.toTimeZone());
+			CronScheduleBuilder cb = CronScheduleBuilder.cronSchedule(schedule.getCron()).inTimeZone(DateTimeZone.UTC.toTimeZone());
+			switch (schedule.getCronMisfireInstruction()) {
+				case CronTrigger.MISFIRE_INSTRUCTION_FIRE_ONCE_NOW:
+					return cb.withMisfireHandlingInstructionFireAndProceed();
+				case CronTrigger.MISFIRE_INSTRUCTION_DO_NOTHING:
+					return cb.withMisfireHandlingInstructionDoNothing();
+			}
+			return cb;
 	    } else {
 	        return SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(schedule.getInterval()).repeatForever();	        
 	    }
