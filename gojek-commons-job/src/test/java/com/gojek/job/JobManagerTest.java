@@ -129,10 +129,12 @@ public class JobManagerTest {
         CronTrigger trigger1 = (CronTrigger) jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job", "some-group"));
         assertEquals(jobDetail1.getJobDataMap().getWrappedMap(), data);
         assertEquals(trigger1.getCronExpression(), schedule.getCron());
+        assertEquals(trigger1.getMisfireInstruction(), CronTrigger.MISFIRE_INSTRUCTION_SMART_POLICY);
         JobDetail jobDetail2 = jobManager.getScheduler().getJobDetail(JobKey.jobKey("some-other-job", "some-other-group"));
         CronTrigger trigger2 = (CronTrigger) jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-other-job", "some-other-group"));
         assertEquals(jobDetail2.getJobDataMap().getWrappedMap(), data);
         assertEquals(trigger2.getCronExpression(), schedule.getCron());
+        assertEquals(trigger2.getMisfireInstruction(), CronTrigger.MISFIRE_INSTRUCTION_SMART_POLICY);
     }
     
     @Test(expectedExceptions=IllegalArgumentException.class)
@@ -414,7 +416,23 @@ public class JobManagerTest {
         doReturn(scheduler).when(jobManager).getScheduler();
         jobManager.getLongRunningJobs();
     }
-    
+
+    @Test
+    public void shouldHonorMisfireInstructionForCronScheduler() throws Exception {
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("some-key", "some-value");
+        Schedule schedule = new Schedule("1 * * * * ?");
+        schedule.setCronMisfireInstruction(CronTrigger.MISFIRE_INSTRUCTION_DO_NOTHING);
+        Job job1 = new Job("some-job", TestJob.class, "some-group", schedule, data, true);
+        jobConfiguration.setJobs(Lists.newArrayList(job1));
+
+        jobManager.serverStarted(mock(Server.class));
+        CronTrigger trigger1 = (CronTrigger) jobManager.getScheduler().getTrigger(TriggerKey.triggerKey("some-job", "some-group"));
+        assertEquals(trigger1.getCronExpression(), schedule.getCron());
+        assertEquals(trigger1.getMisfireInstruction(), CronTrigger.MISFIRE_INSTRUCTION_DO_NOTHING);
+    }
+
+
     /**
      * @author ganeshs
      *
