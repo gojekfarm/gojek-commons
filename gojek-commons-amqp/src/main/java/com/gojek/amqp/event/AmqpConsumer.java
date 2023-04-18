@@ -28,6 +28,8 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	private EventHandler<E> handler;
 	
 	private String queueName;
+
+	private Integer prefetchCount;
 	
 	private Consumer.ShutdownListener shutdownListener;
 	
@@ -39,9 +41,10 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	 * @param handler
 	 * @param shutdownListener
 	 */
-	public AmqpConsumer(String queueName, Channel channel, EventHandler<E> handler, Consumer.ShutdownListener shutdownListener) {
+	public AmqpConsumer(String queueName, Integer prefetchCount, Channel channel, EventHandler<E> handler, Consumer.ShutdownListener shutdownListener) {
 		super(channel);
 		this.queueName = queueName;
+		this.prefetchCount = prefetchCount;
 		this.handler = handler;
 		this.shutdownListener = shutdownListener;
 	}
@@ -94,6 +97,7 @@ public class AmqpConsumer<E> extends DefaultConsumer implements Consumer<E> {
 	@Override
 	public void start() {
 		try {
+			getChannel().basicQos(prefetchCount, true);
 			getChannel().basicConsume(queueName, false, this);
 		} catch (IOException e) {
 			logger.error("Failed while starting the consumer", e);

@@ -28,103 +28,105 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 /**
  * @author ganeshs
- *
  */
 public class AmqpConsumerTest {
-	
+
 	private AmqpConsumer<Event> consumer;
-	
+
 	private Channel channel;
-	
+
 	private EventHandler<Event> handler;
-	
+
 	private Envelope envelope;
-	
+
 	private Event event;
-	
+
 	private String queueName = "test_queue";
-	
+
+	private Integer prefetchCount = 1;
+
 	private BasicProperties properties;
-	
+
 	@BeforeMethod
 	public void setup() {
 		channel = mock(Channel.class);
 		handler = mock(EventHandler.class);
 		when(handler.getEventClass()).thenReturn(Event.class);
-		consumer = new AmqpConsumer<Event>(queueName, channel, handler, null);
+		consumer = new AmqpConsumer<Event>(queueName, prefetchCount, channel, handler, null);
 		envelope = new Envelope(1234L, true, "some_exchange", "some_routing_key");
 		event = new Event("12345", "some_type", DateTime.now());
 		properties = new BasicProperties.Builder().build();
 	}
-	
+
 	@Test
 	public void shouldStartConsumer() throws IOException {
 		consumer.start();
+		verify(channel).basicQos(prefetchCount, true);
 		verify(channel).basicConsume("test_queue", false, consumer);
 	}
-	
+
 	@Test
 	public void shouldCloseChannelOnStop() throws IOException, TimeoutException {
 		consumer.stop();
 		verify(channel).close();
 	}
-	
+
 	@Test
 	public void shouldCallHandlerOnMessageDelivery() throws IOException {
 		when(handler.handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders())).thenReturn(Status.success);
 		consumer.handleDelivery("some_consumer_tag", envelope, properties, Serializer.DEFAULT_JSON_SERIALIZER.serialize(event).getBytes());
 		verify(handler).handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders());
 	}
-	
+
 	@Test
 	public void shouldAckMessageWhenHandlerReturnsSuccess() throws IOException {
 		when(handler.handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders())).thenReturn(Status.success);
 		consumer.handleDelivery("some_consumer_tag", envelope, properties, Serializer.DEFAULT_JSON_SERIALIZER.serialize(event).getBytes());
 		verify(channel).basicAck(envelope.getDeliveryTag(), false);
 	}
-	
+
 	@Test
 	public void shouldNackAndRequeueMessageWhenHandlerReturnsSoftFailure() throws IOException {
 		when(handler.handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders())).thenReturn(Status.soft_failure);
 		consumer.handleDelivery("some_consumer_tag", envelope, properties, Serializer.DEFAULT_JSON_SERIALIZER.serialize(event).getBytes());
 		verify(channel).basicNack(envelope.getDeliveryTag(), false, true);
 	}
-	
+
 	@Test
 	public void shouldNackAndNotRequeueMessageWhenHandlerReturnsHardFailure() throws IOException {
 		when(handler.handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders())).thenReturn(Status.hard_failure);
 		consumer.handleDelivery("some_consumer_tag", envelope, properties, Serializer.DEFAULT_JSON_SERIALIZER.serialize(event).getBytes());
 		verify(channel).basicNack(envelope.getDeliveryTag(), false, false);
 	}
-	
+
 	@Test
 	public void shouldNackAndNotRequeueMessageWhenEventDeserializationFails() throws IOException {
 		consumer.handleDelivery("some_consumer_tag", envelope, properties, Serializer.DEFAULT_JSON_SERIALIZER.serialize("some_event").getBytes());
 		verify(channel).basicNack(envelope.getDeliveryTag(), false, false);
 	}
-	
+
 	@Test
 	public void shouldNotCallHandlerWhenEventDeserializationFails() throws IOException {
 		when(handler.handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders())).thenReturn(Status.success);
 		consumer.handleDelivery("some_consumer_tag", envelope, properties, Serializer.DEFAULT_JSON_SERIALIZER.serialize(event).getBytes());
 		verify(handler).handle(event, queueName, envelope.getRoutingKey(), properties.getHeaders());
 	}
-	
+
 	@Test
 	public void shouldCallShutdownHandlerWhenItsNotApplicationInitiated() {
 		final AtomicBoolean handlerInvoked = new AtomicBoolean();
-		consumer = new AmqpConsumer<Event>("test_queue", channel, handler, c -> {
+		consumer = new AmqpConsumer<Event>("test_queue", prefetchCount, channel, handler, c -> {
 			handlerInvoked.set(c == consumer);
 		});
 		ShutdownSignalException exception = new ShutdownSignalException(false, false, null, this);
 		consumer.handleShutdownSignal("some_consumer_tag", exception);
 		assertTrue(handlerInvoked.get());
 	}
-	
+
 	@Test
 	public void shouldNotCallShutdownHandlerWhenItsApplicationInitiated() {
 		final AtomicBoolean handlerInvoked = new AtomicBoolean();
-		consumer = new AmqpConsumer<Event>("test_queue", channel, handler, c -> {
+		consumer = new AmqpConsumer<Event>("test_queue", prefetchCount, channel, handler, c -> {
 			handlerInvoked.set(true);
 		});
 		ShutdownSignalException exception = new ShutdownSignalException(false, true, null, this);

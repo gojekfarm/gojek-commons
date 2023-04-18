@@ -26,6 +26,8 @@ public class AmqpConsumerContainer<E> implements Consumer.ShutdownListener, Mana
 	private String queueName;
 	
 	private int maxConsumers;
+
+	private Integer prefetchCount;
 	
 	private List<AmqpConsumer<E>> consumers;
 	
@@ -43,6 +45,7 @@ public class AmqpConsumerContainer<E> implements Consumer.ShutdownListener, Mana
 	public AmqpConsumerContainer(ConsumerConfiguration configuration, EventHandler<E> handler, AmqpConnection connection) {
 		this.queueName = configuration.getQueueName();
 		this.maxConsumers = configuration.getMaxQueueConsumers();
+		this.prefetchCount = configuration.getPrefetchCount();
 		this.handler = handler;
 		this.connection = connection;
 		this.consumers = Lists.newArrayList();
@@ -77,7 +80,7 @@ public class AmqpConsumerContainer<E> implements Consumer.ShutdownListener, Mana
 	 * @return
 	 */
 	protected AmqpConsumer<E> createConsumer(Channel channel) {
-		return new AmqpConsumer<E>(queueName, channel, handler, this);
+		return new AmqpConsumer<E>(queueName, prefetchCount, channel, handler, this);
 	}
 	
 	/**
