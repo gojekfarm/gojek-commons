@@ -12,6 +12,8 @@ public class ConsumerConfiguration {
     private Destination retryDestination;
     
     private String queueName;
+
+    private Integer prefetchCount = 0;
     
     private Integer maxRetries = DEFAULT_MAX_RETRIES;
     
@@ -102,5 +104,13 @@ public class ConsumerConfiguration {
      */
     public void setMaxQueueConsumers(Integer maxQueueConsumers) {
         this.maxQueueConsumers = maxQueueConsumers;
+    }
+
+    public Integer getPrefetchCount() {
+        return prefetchCount;
+    }
+
+    public void setPrefetchCount(Integer prefetchCount) {
+        this.prefetchCount = prefetchCount;
     }
 }
